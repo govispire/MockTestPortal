@@ -128,6 +128,7 @@ export function setupAuth(app: Express) {
 
   // Login endpoint
   app.post("/api/login", (req, res, next) => {
+    // @ts-ignore - Passport types are a bit outdated
     passport.authenticate('local', (err, user, info) => {
       if (err) {
         console.error('Login error:', err);

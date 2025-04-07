@@ -6,12 +6,21 @@ import {
   Question, 
   InsertQuestion, 
   UserTestResult, 
-  InsertUserTestResult 
+  InsertUserTestResult,
+  users,
+  tests,
+  questions,
+  userTestResults
 } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
+import connectPg from "connect-pg-simple";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
+import { pool } from "./db";
 
 const MemoryStore = createMemoryStore(session);
+const PostgresSessionStore = connectPg(session);
 
 export interface IStorage {
   // User methods
@@ -39,7 +48,7 @@ export interface IStorage {
   getAllCategories(): Promise<string[]>;
   
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: any; // Using any for session store to avoid TypeScript issues
 }
 
 export class MemStorage implements IStorage {
@@ -47,7 +56,7 @@ export class MemStorage implements IStorage {
   private tests: Map<number, Test>;
   private questions: Map<number, Question>;
   private userTestResults: Map<number, UserTestResult>;
-  sessionStore: session.SessionStore;
+  sessionStore: any; // Using any for session store to avoid TypeScript issues
   
   private userIdCounter: number;
   private testIdCounter: number;
@@ -265,4 +274,104 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  sessionStore: any; // Using any for session store to avoid TypeScript issues
+
+  constructor() {
+    this.sessionStore = new PostgresSessionStore({ 
+      pool, 
+      createTableIfMissing: true 
+    });
+  }
+
+  // User methods
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async createUser(user: InsertUser): Promise<User> {
+    const [newUser] = await db.insert(users).values(user).returning();
+    return newUser;
+  }
+
+  // Test methods
+  async getAllTests(): Promise<Test[]> {
+    return await db.select().from(tests);
+  }
+
+  async getTestById(id: number): Promise<Test | undefined> {
+    const [test] = await db.select().from(tests).where(eq(tests.id, id));
+    return test;
+  }
+
+  async createTest(test: InsertTest): Promise<Test> {
+    const [newTest] = await db.insert(tests).values(test).returning();
+    return newTest;
+  }
+
+  async incrementTestAttemptCount(id: number): Promise<void> {
+    const [test] = await db.select().from(tests).where(eq(tests.id, id));
+    if (test) {
+      await db.update(tests)
+        .set({ attemptCount: (test.attemptCount || 0) + 1 })
+        .where(eq(tests.id, id));
+    }
+  }
+
+  // Question methods
+  async getQuestionById(id: number): Promise<Question | undefined> {
+    const [question] = await db.select().from(questions).where(eq(questions.id, id));
+    return question;
+  }
+
+  async getQuestionsByTestId(testId: number): Promise<Question[]> {
+    return await db.select().from(questions).where(eq(questions.testId, testId));
+  }
+
+  async createQuestion(question: InsertQuestion): Promise<Question> {
+    const [newQuestion] = await db.insert(questions).values(question).returning();
+    return newQuestion;
+  }
+
+  // Result methods
+  async getUserTestResults(userId: number): Promise<UserTestResult[]> {
+    return await db.select().from(userTestResults).where(eq(userTestResults.userId, userId));
+  }
+
+  async getUserTestResultByTestId(userId: number, testId: number): Promise<UserTestResult | undefined> {
+    const [result] = await db.select().from(userTestResults).where(
+      and(
+        eq(userTestResults.userId, userId),
+        eq(userTestResults.testId, testId)
+      )
+    );
+    return result;
+  }
+
+  async createUserTestResult(result: InsertUserTestResult): Promise<UserTestResult> {
+    const [newResult] = await db.insert(userTestResults).values(result).returning();
+    return newResult;
+  }
+
+  // Category methods
+  async getAllCategories(): Promise<string[]> {
+    const results = await db.select({ category: tests.category }).from(tests);
+    
+    // Filter out duplicates and nulls
+    const categories = results
+      .map(row => row.category)
+      .filter((category): category is string => category !== null && category !== undefined);
+    
+    // Return unique categories
+    return Array.from(new Set(categories));
+  }
+}
+
+// Switch from MemStorage to DatabaseStorage
+export const storage = new DatabaseStorage();

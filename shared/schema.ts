@@ -1,6 +1,7 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, primaryKey } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { relations } from "drizzle-orm";
 
 // User Schema
 export const users = pgTable("users", {
@@ -10,6 +11,10 @@ export const users = pgTable("users", {
   name: text("name"),
   email: text("email"),
 });
+
+export const usersRelations = relations(users, ({ many }) => ({
+  testResults: many(userTestResults),
+}));
 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -31,6 +36,11 @@ export const tests = pgTable("tests", {
   imageUrl: text("image_url"),
 });
 
+export const testsRelations = relations(tests, ({ many }) => ({
+  questions: many(questions),
+  testResults: many(userTestResults),
+}));
+
 export const insertTestSchema = createInsertSchema(tests).omit({
   id: true,
 });
@@ -44,6 +54,13 @@ export const questions = pgTable("questions", {
   correctAnswer: text("correct_answer").notNull(),
   explanation: text("explanation"),
 });
+
+export const questionsRelations = relations(questions, ({ one }) => ({
+  test: one(tests, {
+    fields: [questions.testId],
+    references: [tests.id],
+  }),
+}));
 
 export const insertQuestionSchema = createInsertSchema(questions).omit({
   id: true,
@@ -63,6 +80,17 @@ export const userTestResults = pgTable("user_test_results", {
   completedAt: timestamp("completed_at").notNull(),
   userAnswers: text("user_answers").notNull(), // JSON string of user answers
 });
+
+export const userTestResultsRelations = relations(userTestResults, ({ one }) => ({
+  user: one(users, {
+    fields: [userTestResults.userId],
+    references: [users.id],
+  }),
+  test: one(tests, {
+    fields: [userTestResults.testId],
+    references: [tests.id],
+  }),
+}));
 
 export const insertUserTestResultSchema = createInsertSchema(userTestResults).omit({
   id: true,
