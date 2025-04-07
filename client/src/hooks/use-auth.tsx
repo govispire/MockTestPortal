@@ -44,6 +44,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Login successful",
         description: `Welcome back, ${user.username}!`,
       });
+      
+      // Role-based redirection
+      if (user.role === "owner") {
+        navigate("/owner");
+      } else {
+        navigate("/dashboard");
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -65,6 +72,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Registration successful",
         description: `Welcome, ${user.username}!`,
       });
+      
+      // Role-based redirection
+      if (user.role === "owner") {
+        navigate("/owner");
+      } else {
+        navigate("/dashboard");
+      }
     },
     onError: (error: Error) => {
       toast({
