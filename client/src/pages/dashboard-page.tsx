@@ -38,7 +38,7 @@ const formatDate = (date: string | Date) => {
 };
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, logoutMutation } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Tests");
   const [flashcards, setFlashcards] = useState<Array<{id: number, question: string, answer: string}>>([
@@ -194,7 +194,11 @@ export default function DashboardPage() {
                   <Info className="h-4 w-4" />
                   <span>Help</span>
                 </Button>
-                <Button variant="ghost" className="w-full justify-start gap-2 text-red-500" onClick={() => {}}>
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start gap-2 text-red-500" 
+                  onClick={() => logoutMutation.mutate()}
+                >
                   <LogOut className="h-4 w-4" />
                   <span>Logout</span>
                 </Button>
