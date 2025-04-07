@@ -46,15 +46,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: `Welcome back, ${user.username}!`,
       });
       
-      // Role-based redirection
+      // Don't redirect here - let the useEffect in auth-page handle it
+      // This prevents race conditions between state updates and navigation
       console.log("User role:", user.role);
-      if (user.role === "owner") {
-        console.log("Redirecting to owner dashboard");
-        navigate("/owner");
-      } else {
-        console.log("Redirecting to regular dashboard");
-        navigate("/dashboard");
-      }
+      console.log("Redirection will be handled by auth-page useEffect");
     },
     onError: (error: Error) => {
       toast({
@@ -78,15 +73,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: `Welcome, ${user.username}!`,
       });
       
-      // Role-based redirection
+      // Don't redirect here - let the useEffect in auth-page handle it
+      // This prevents race conditions between state updates and navigation
       console.log("User role:", user.role);
-      if (user.role === "owner") {
-        console.log("Redirecting to owner dashboard");
-        navigate("/owner");
-      } else {
-        console.log("Redirecting to regular dashboard");
-        navigate("/dashboard");
-      }
+      console.log("Redirection will be handled by auth-page useEffect");
     },
     onError: (error: Error) => {
       toast({

@@ -48,13 +48,16 @@ export default function AuthPage() {
     console.log("Auth page useEffect triggered, user:", user);
     if (user) {
       console.log("User is logged in, role:", user.role);
-      if (user.role === "owner") {
-        console.log("Redirecting owner to /owner dashboard");
-        navigate("/owner");
-      } else {
-        console.log("Redirecting regular user to /dashboard");
-        navigate("/dashboard");
-      }
+      // Delay redirect slightly to ensure state is fully updated
+      setTimeout(() => {
+        if (user.role === "owner") {
+          console.log("Redirecting owner to /owner dashboard");
+          navigate("/owner");
+        } else {
+          console.log("Redirecting regular user to /dashboard");
+          navigate("/dashboard");
+        }
+      }, 100);
     }
   }, [user, navigate]);
 
