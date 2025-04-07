@@ -45,8 +45,16 @@ export default function AuthPage() {
 
   // Redirect if already logged in
   useEffect(() => {
+    console.log("Auth page useEffect triggered, user:", user);
     if (user) {
-      navigate("/");
+      console.log("User is logged in, role:", user.role);
+      if (user.role === "owner") {
+        console.log("Redirecting owner to /owner dashboard");
+        navigate("/owner");
+      } else {
+        console.log("Redirecting regular user to /dashboard");
+        navigate("/dashboard");
+      }
     }
   }, [user, navigate]);
 

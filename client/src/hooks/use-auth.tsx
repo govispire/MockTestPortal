@@ -39,6 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return await res.json();
     },
     onSuccess: (user: SelectUser) => {
+      console.log("Login successful, user data:", user);
       queryClient.setQueryData(["/api/user"], user);
       toast({
         title: "Login successful",
@@ -46,9 +47,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       // Role-based redirection
+      console.log("User role:", user.role);
       if (user.role === "owner") {
+        console.log("Redirecting to owner dashboard");
         navigate("/owner");
       } else {
+        console.log("Redirecting to regular dashboard");
         navigate("/dashboard");
       }
     },
@@ -67,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return await res.json();
     },
     onSuccess: (user: SelectUser) => {
+      console.log("Registration successful, user data:", user);
       queryClient.setQueryData(["/api/user"], user);
       toast({
         title: "Registration successful",
@@ -74,9 +79,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       // Role-based redirection
+      console.log("User role:", user.role);
       if (user.role === "owner") {
+        console.log("Redirecting to owner dashboard");
         navigate("/owner");
       } else {
+        console.log("Redirecting to regular dashboard");
         navigate("/dashboard");
       }
     },
