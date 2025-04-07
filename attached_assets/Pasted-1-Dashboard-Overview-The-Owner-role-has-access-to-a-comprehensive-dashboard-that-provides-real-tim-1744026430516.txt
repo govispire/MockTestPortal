@@ -1,0 +1,193 @@
+1. Dashboard Overview
+
+The Owner role has access to a comprehensive dashboard that provides real-time insights into various aspects of the platform, helping them monitor, manage, and make strategic decisions. The dashboard is divided into several key areas:
+
+    Metrics & Key Insights:
+
+        Sales Performance: Displays today, weekly, monthly, and overall sales, allowing owners to track and compare earnings over time.
+
+        Most Active Product: Highlights the top-selling products such as courses, tests, or subscription packages, enabling the owner to focus on what’s performing best.
+
+        Most Popular Test or Exam: Lists the most popular exams or tests based on user enrollments or purchases, helping the owner identify high-demand tests.
+
+        Most Purchased Course: Shows the courses with the highest sales, allowing the owner to make data-driven decisions on course management.
+
+    Quick Access Panels:
+
+        Provides shortcuts or tiles for quickly navigating to key sections like Revenue & Payment, Sales Analysis, etc., for efficient management.
+
+2. User Activity and Purchases Breakdown
+
+This section is designed to track user activity and purchases, allowing the owner to monitor how users are interacting with the platform and what’s driving revenue.
+
+    Current Active Users:
+
+        Displays the number of users currently logged in to the platform, updated dynamically. This real-time tracking helps the owner gauge platform engagement.
+
+    Total Logged-In Users:
+
+        Shows the total number of users who have logged in over a specific period (e.g., daily, weekly, monthly), providing insight into user activity trends.
+
+    Purchased vs Non-Purchased Users:
+
+        Purchased Students: Tracks how many users (students) have made a purchase (course, test, subscription, etc.).
+
+        Non-Purchased Students: Displays how many users logged in but did not make a purchase. This section is critical for identifying gaps in conversion rates.
+
+    User Engagement Breakdown:
+
+        Lists detailed data on purchased students (including product purchases) and non-purchased students, giving the owner an understanding of who is engaging but not converting.
+
+    Visualizing Data:
+
+        The dashboard layout includes real-time counters, graphs (pie/bar charts) for comparisons, and tables that provide in-depth breakdowns of user activities (e.g., purchases, engagement rates).
+
+        Filters allow the owner to analyze data by time period (today, weekly, monthly) or by user type (e.g., students, employees).
+
+3. Revenue & Payment Management
+
+The Revenue & Payment Management section provides a detailed view of the financial health of the platform, including income, user payments, and other financial metrics.
+
+    Total Earnings Breakdown:
+
+        Visualizes the earnings from courses, test series, and subscriptions, allowing the owner to track revenue across different sources.
+
+    Transaction History:
+
+        Displays a timeline or table of all transactions (payments, refunds, etc.), with options to filter by date range and transaction type (e.g., refund, payment).
+
+    Subscription Plan Management:
+
+        Allows the owner to manage subscription plans, including viewing active/inactive users and adjusting pricing tiers or benefits based on performance.
+
+    Payouts & Withdrawals:
+
+        Manages payouts to employees/teachers, showing a list of pending and completed payments. Filters are available to review status, amount, and user details.
+
+4. Sales & Performance Analysis
+
+This section helps the owner analyze platform performance by identifying high-performing products and overall platform trends.
+
+    Top Revenue-Generating Courses:
+
+        Displays the Top 5 courses by revenue, enabling the owner to see which courses are driving the most income.
+
+    Most Purchased Test Packages:
+
+        Lists the most popular test packages based on purchases, providing insights into what types of tests are attracting the most students.
+
+    Most Demanding Tests/Exams:
+
+        Highlights the tests or exams with the most user interest or enrollment, helping the owner to prioritize resources on high-demand offerings.
+
+    Popular Exam Categories:
+
+        Tracks the popularity of different exam categories (e.g., Science, Math) based on sign-ups vs. dropouts. This insight helps the owner identify areas for improvement or investment.
+
+    Daily Signups & Conversion Rates:
+
+        Tracks daily sign-ups and calculates the conversion rate (visitors who became paying users), which provides insights into the effectiveness of marketing and onboarding strategies.
+
+5. User Behavior Tracking
+
+Understanding user behavior is crucial for improving the platform and increasing engagement. This section tracks how users interact with the platform.
+
+    New vs Returning Users:
+
+        Displays a breakdown of new vs returning users, helping the owner understand user retention and loyalty.
+
+    Users Who Left Without Buying:
+
+        Identifies users who registered but did not make any purchases, providing insights into potential barriers in the conversion funnel.
+
+    Incomplete Tests:
+
+        Tracks users who started but didn’t complete a test, providing data for follow-ups or content improvement.
+
+    Average Time on Platform:
+
+        Measures how long users spend on the platform on average, with trends over time to track user engagement.
+
+    Most Used Features:
+
+        Displays the most used platform features, such as tests, courses, calendar, and leaderboard, helping the owner understand where users are engaging most frequently.
+
+6. Test & Course Feedback
+
+This section provides insight into the quality of tests and courses based on user feedback and ratings.
+
+    Test & Course Ratings:
+
+        Allows the owner to view average ratings for tests and courses, highlighting areas that need improvement based on low ratings.
+
+    User Reviews & Comments:
+
+        Displays user reviews for courses and tests, along with an option for the owner to respond to feedback and address concerns.
+
+    Common Complaints & Improvement Areas:
+
+        Aggregates feedback to identify common complaints and areas for improvement, helping the owner make data-driven decisions on content or features.
+
+7. Website Performance & Server Health
+
+This section provides real-time insights into the performance of the platform and the health of its infrastructure.
+
+    Active Users Right Now:
+
+        Tracks the number of users currently active on the platform in real time, allowing the owner to monitor peak usage times.
+
+    Website Load Speed & Uptime Status:
+
+        Displays performance metrics, such as load speed and uptime status, ensuring that the platform is running smoothly without performance issues.
+
+    Error Logs & Bug Reports:
+
+        Monitors any errors or bugs, categorizing them for quick fixes and ensuring the platform is stable.
+
+    Database Performance:
+
+        Tracks database queries, performance bottlenecks, and potential issues, ensuring the platform operates efficiently.
+
+8. Marketing & Promotions
+
+This section helps the owner track the effectiveness of marketing campaigns and promotional efforts.
+
+    Campaign Tracking:
+
+        Monitors the success of marketing campaigns (e.g., email campaigns, social media ads), helping the owner evaluate return on investment (ROI).
+
+    Promotions & Discounts:
+
+        Manages active promotions and discount codes, including their performance and impact on sales.
+
+9. Settings Management
+
+This section enables the owner to manage platform settings and user roles.
+
+    Global Platform Settings:
+
+        Manages site-wide settings such as language, payment settings, course configurations, and more.
+
+    Role-Based Access Control (RBAC):
+
+        Administers roles and permissions for users (students, employees, admins) to ensure that each role has appropriate access to the platform.
+
+    Content & Theme Management:
+
+        Allows the owner to manage course content, branding, themes, and layout settings for the platform.
+
+10. User Management
+
+The Owner role has full access to manage platform users and their activities.
+
+    User Accounts:
+
+        View and manage user profiles, including the ability to suspend or delete accounts as necessary.
+
+    Role Management:
+
+        Assign and update roles (student, employee, admin) for users, ensuring that permissions align with their responsibilities.
+
+    Activity Logs:
+
+        Track and review detailed user activity across the platform, such as sign-ups, purchases, and content engagement.
