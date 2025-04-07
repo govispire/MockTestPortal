@@ -10,6 +10,7 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   name: text("name"),
   email: text("email"),
+  role: text("role").notNull().default('student'),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -21,6 +22,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
   name: true,
   email: true,
+  role: true,
 });
 
 // Test Schema

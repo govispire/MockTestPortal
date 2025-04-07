@@ -13,15 +13,15 @@ declare global {
   }
 }
 
-const scryptAsync = promisify(scrypt);
+export const scryptAsync = promisify(scrypt);
 
-async function hashPassword(password: string) {
+export async function hashPassword(password: string) {
   const salt = randomBytes(16).toString("hex");
   const buf = (await scryptAsync(password, salt, 64)) as Buffer;
   return `${buf.toString("hex")}.${salt}`;
 }
 
-async function comparePasswords(supplied: string, stored: string) {
+export async function comparePasswords(supplied: string, stored: string) {
   const [hashed, salt] = stored.split(".");
   const hashedBuf = Buffer.from(hashed, "hex");
   const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
@@ -104,13 +104,24 @@ export function setupAuth(app: Express) {
   // Registration endpoint
   app.post("/api/register", async (req, res, next) => {
     try {
-      const existingUser = await storage.getUserByUsername(req.body.username);
-      if (existingUser) {
-        return res.status(400).send("Username already exists");
+      // Check if the user is trying to register as anything other than a student
+      if (req.body.role && req.body.role !== 'student') {
+        return res.status(403).json({
+          message: "Only student accounts can self-register. Admin, Employee, and Owner accounts must be created by an Owner."
+        });
       }
 
+      const existingUser = await storage.getUserByUsername(req.body.username);
+      if (existingUser) {
+        return res.status(400).json({
+          message: "Username already exists"
+        });
+      }
+
+      // Ensure role is set to student for self-registration
       const user = await storage.createUser({
         ...req.body,
+        role: 'student', // Explicitly set role to student regardless of input
         password: await hashPassword(req.body.password),
       });
 
@@ -122,7 +133,9 @@ export function setupAuth(app: Express) {
       });
     } catch (error) {
       console.error('Registration error:', error);
-      res.status(500).send("Registration failed");
+      res.status(500).json({
+        message: "Registration failed"
+      });
     }
   });
 

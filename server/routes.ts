@@ -1,9 +1,9 @@
-import type { Express } from "express";
+import express, { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth } from "./auth";
+import { setupAuth, hashPassword } from "./auth";
 import { z } from "zod";
-import { Test, Question, UserTestResult, insertTestSchema, insertQuestionSchema, insertUserTestResultSchema } from "@shared/schema";
+import { Test, Question, UserTestResult, User, insertTestSchema, insertQuestionSchema, insertUserTestResultSchema, insertUserSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes
@@ -137,6 +137,120 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(categories);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch categories" });
+    }
+  });
+
+  // User management endpoints - Only accessible by Owner role
+  
+  // Middleware to check if user is an Owner
+  const isOwner = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    if (req.user?.role !== 'owner') {
+      return res.status(403).json({ error: "Access denied. Only owners can manage users." });
+    }
+    
+    next();
+  };
+  
+  // Get all users (Owner only)
+  app.get("/api/admin/users", isOwner, async (req, res) => {
+    try {
+      // We'll need to add this method to storage
+      const users = await storage.getAllUsers();
+      
+      // Remove passwords before sending
+      const safeUsers = users.map((user: User) => {
+        const { password, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+      });
+      
+      res.json(safeUsers);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+  
+  // Create a new admin/employee user (Owner only)
+  app.post("/api/admin/users", isOwner, async (req, res) => {
+    try {
+      const { role } = req.body;
+      
+      // Validate role - only allow 'admin' or 'employee' creation through this endpoint
+      if (role !== 'admin' && role !== 'employee') {
+        return res.status(400).json({ 
+          error: "Invalid role. Only 'admin' or 'employee' roles can be created." 
+        });
+      }
+      
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(req.body.username);
+      if (existingUser) {
+        return res.status(400).json({ error: "Username already exists" });
+      }
+      
+      // Create the user
+      const userData = insertUserSchema.parse({
+        ...req.body,
+        password: await hashPassword(req.body.password)
+      });
+      
+      const newUser = await storage.createUser(userData);
+      
+      // Remove password from response
+      const { password, ...userWithoutPassword } = newUser;
+      res.status(201).json(userWithoutPassword);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      console.error('Error creating user:', error);
+      res.status(500).json({ error: "Failed to create user" });
+    }
+  });
+  
+  // Update a user (Owner only)
+  app.patch("/api/admin/users/:id", isOwner, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      // Get the existing user
+      const existingUser = await storage.getUser(userId);
+      if (!existingUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // We'll need to add this method to storage
+      const updatedUser = await storage.updateUser(userId, req.body);
+      
+      // Remove password from response
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error('Error updating user:', error);
+      res.status(500).json({ error: "Failed to update user" });
+    }
+  });
+  
+  // Delete a user (Owner only)
+  app.delete("/api/admin/users/:id", isOwner, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      // We'll need to add this method to storage
+      const deleted = await storage.deleteUser(userId);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      res.status(500).json({ error: "Failed to delete user" });
     }
   });
 

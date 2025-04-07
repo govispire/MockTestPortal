@@ -1,0 +1,136 @@
+Roles Overview:
+
+    Student:
+
+        Audience: These users can sign up and create their own username and password.
+
+        They will have access to the Student Dashboard where they can interact with course content, tests, and other student-specific features.
+
+    Employee:
+
+        Role Management: Employees can only be created by the Owner.
+
+        They will have access to features specific to their role (e.g., managing student data, assisting with tasks, or helping students).
+
+        Employees will have a restricted view compared to Admins and Owners, and they will be given permissions by the Owner.
+
+    Admin:
+
+        Role Management: Admins can only be created by the Owner.
+
+        Admins will have access to the Admin Dashboard, where they can manage users (like Employees and Students), oversee platform functionality, and analyze performance metrics.
+
+        Admins will have higher privileges than Employees but will be restricted compared to the Owner.
+
+    Owner:
+
+        Full Access: The Owner has unrestricted access to the entire platform.
+
+        The Owner can manage the Admin and Employee accounts, configure platform settings, and oversee all system features, such as financials, sales, user behavior, and reports.
+
+Key Functionalities Based on Roles
+1. Landing Page with Login/Signup
+
+    Login and Signup buttons will be displayed on the landing page.
+
+        Login will allow users to enter their username and password.
+
+        Signup will allow students to create their own username and password.
+
+        For Admin and Employee, signups are restricted and can only be done by the Owner.
+
+2. Login Page
+
+    Students can log in using their username and password.
+
+    Admins and Employees can only log in if their account has been created by the Owner.
+
+        Role Check: After successful login, the system will check the user's role (Student, Admin, Employee, or Owner) and redirect them to the appropriate dashboard.
+
+3. Signup Page
+
+    Students can create their own username and password during signup.
+
+    Admins and Employees: These roles can’t sign up by themselves. They must be created by the Owner in the backend. During signup, show a message indicating that these roles are created by the Owner only.
+
+4. Role-Based Redirection After Login
+
+After login, the user is redirected to a page based on their role:
+
+    Student → Redirect to the Student Dashboard.
+
+    Employee → Redirect to the Employee Dashboard.
+
+    Admin → Redirect to the Admin Dashboard.
+
+    Owner → Redirect to the Owner Dashboard (full access).
+
+5. Role Management (Owner’s Privileges)
+
+    The Owner will have the ability to:
+
+        Create, edit, and delete Admin and Employee accounts.
+
+        Set permissions for Employees and Admins.
+
+        View and manage all accounts (Admins, Employees, and Students).
+
+    Admin and Employee accounts will only be accessible/created by the Owner.
+
+AI Prompts to Implement the System:
+
+    Landing Page with Login and Signup:
+
+"Create a simple, user-friendly landing page with two options: 'Login' and 'Signup'. The 'Signup' button should be visible for students, allowing them to create their own account with a username and password. The 'Login' button should allow users to log in with their username and password, and after successful login, they should be redirected based on their role (Owner, Admin, Employee, or Student)."
+
+Login Page:
+
+"Create a login page with fields for username and password. After a user logs in successfully, check their role (Student, Admin, Employee, Owner) and redirect them to their specific dashboard:
+- **Owner**: Redirect to Owner Dashboard (full access).
+- **Admin**: Redirect to Admin Dashboard (admin-level access).
+- **Employee**: Redirect to Employee Dashboard (restricted access).
+- **Student**: Redirect to Student Dashboard (view-only access)."
+
+Signup Page:
+
+"Create a signup page where **students** can create their own username and password. For **admins** and **employees**, restrict the signup form and display a message stating: 'Admin and Employee accounts can only be created by the Owner'."
+
+Role-Based Redirection Logic:
+
+"After successful login, check the user’s role:
+- **Student**: Redirect to the Student Dashboard.
+- **Employee**: Redirect to the Employee Dashboard.
+- **Admin**: Redirect to the Admin Dashboard.
+- **Owner**: Redirect to the Owner Dashboard.
+Implement conditional checks to ensure that Admins and Employees cannot sign up but must be created by the Owner."
+
+Role Management System for Owner:
+
+    "Create an admin management system where only the **Owner** has the ability to create, edit, and delete **Admin** and **Employee** accounts. Implement role-based access control (RBAC) such that:
+    - **Owner** has full control and can manage all user roles.
+    - **Admins** and **Employees** can only manage data or features assigned to their roles.
+    - **Employees** cannot create or modify user accounts."
+
+Backend Implementation (Role Management & Authentication)
+
+    User Model: Create a table to store user data (username, password, role).
+
+        Role field: Owner, Admin, Employee, Student.
+
+    Role Check Logic:
+
+        Upon login, check the user's role and return their dashboard location:
+
+            Owner → Redirect to Owner Dashboard.
+
+            Admin → Redirect to Admin Dashboard.
+
+            Employee → Redirect to Employee Dashboard.
+
+            Student → Redirect to Student Dashboard.
+
+    Permissions:
+
+        Ensure the Owner has full CRUD (create, read, update, delete) access to all accounts.
+
+        Admin and Employee users will have limited access to their specific dashboards and no permissions for user management.
