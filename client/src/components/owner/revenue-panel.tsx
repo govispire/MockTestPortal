@@ -1,737 +1,755 @@
-import { useState } from 'react';
-import { 
-  Bar, 
-  BarChart, 
-  Line, 
-  LineChart, 
-  ResponsiveContainer, 
-  Tooltip, 
-  XAxis, 
-  YAxis,
-  CartesianGrid,
-  Legend,
-  Area,
-  AreaChart,
-  PieChart,
-  Pie,
-  Cell
-} from 'recharts';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, LineChart, Line } from "recharts";
 import { 
-  CreditCard, 
   DollarSign, 
-  ArrowUpRight, 
-  ArrowDownRight,
-  TrendingUp,
-  Calendar,
-  LineChart as LineChartIcon,
-  BarChart2,
-  PieChart as PieChartIcon,
-  ArrowUp,
-  ArrowDown,
-  Plus,
-  Minus,
-  Percent,
-  Clock
+  ArrowUpRight,
+  CreditCard,
+  Clock,
+  Wallet,
+  IndianRupee
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 
-// Format currency for Indian Rupees
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
-};
-
-// Mock data for demonstration
-const monthlyRevenue = [
-  { month: 'Jan', revenue: 1246800 },
-  { month: 'Feb', revenue: 1358400 },
-  { month: 'Mar', revenue: 1542200 },
-  { month: 'Apr', revenue: 1683600 },
-  { month: 'May', revenue: 1872400 },
-  { month: 'Jun', revenue: 2134800 }
-];
-
-const revenueByProduct = [
-  { name: 'Mock Tests', value: 48 },
-  { name: 'Courses', value: 32 },
-  { name: 'Study Materials', value: 12 },
-  { name: 'Mentorship', value: 8 }
-];
-
-const PRODUCT_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
-const revenueBreakdown = [
-  { 
-    title: 'UPSC Comprehensive Bundle', 
-    price: 12500,
-    sales: 48,
-    revenue: 600000,
-    growth: '+18%'
+// Temporary mock data
+const REVENUE_OVERVIEW = [
+  {
+    name: "Total Revenue",
+    value: 2854280,
+    icon: DollarSign,
+    change: 18,
+    trend: "up",
+    period: "month"
   },
-  { 
-    title: 'Banking Exam Series', 
-    price: 6800,
-    sales: 92,
-    revenue: 625600,
-    growth: '+15%'
+  {
+    name: "Average Transaction",
+    value: 7500,
+    icon: CreditCard,
+    change: 4.5,
+    trend: "up",
+    period: "month"
   },
-  { 
-    title: 'SSC Complete Package', 
-    price: 4500,
-    sales: 104,
-    revenue: 468000,
-    growth: '+12%'
+  {
+    name: "Processing Fee",
+    value: 142714,
+    icon: Clock,
+    change: 18,
+    trend: "up",
+    period: "month"
   },
-  { 
-    title: 'Railways Preparation Kit', 
-    price: 3800,
-    sales: 72,
-    revenue: 273600,
-    growth: '+8%'
-  },
-  { 
-    title: 'One-on-One Mentorship', 
-    price: 15000,
-    sales: 11,
-    revenue: 165000,
-    growth: '+21%'
+  {
+    name: "Net Earnings",
+    value: 2711566,
+    icon: Wallet,
+    change: 18,
+    trend: "up",
+    period: "month"
   }
 ];
 
-const subscriptionData = [
-  { month: 'Jan', monthly: 82, quarterly: 38, annual: 24 },
-  { month: 'Feb', monthly: 86, quarterly: 42, annual: 28 },
-  { month: 'Mar', monthly: 92, quarterly: 48, annual: 32 },
-  { month: 'Apr', monthly: 98, quarterly: 52, annual: 36 },
-  { month: 'May', monthly: 108, quarterly: 58, annual: 42 },
-  { month: 'Jun', monthly: 124, quarterly: 64, annual: 48 }
+const REVENUE_BY_PRODUCT = [
+  { name: "UPSC Complete Package", value: 1425000, color: "#3498db" },
+  { name: "Banking Exams Bundle", value: 845000, color: "#2ecc71" },
+  { name: "SSC Advanced Course", value: 385000, color: "#9b59b6" },
+  { name: "Railway Exam Prep", value: 125000, color: "#f39c12" },
+  { name: "Other Courses", value: 74280, color: "#e74c3c" }
 ];
 
-const paymentMethodsData = [
-  { method: 'Credit Card', percentage: 46 },
-  { method: 'UPI', percentage: 32 },
-  { method: 'Debit Card', percentage: 14 },
-  { method: 'Net Banking', percentage: 6 },
-  { method: 'Wallet', percentage: 2 }
+const MONTHLY_REVENUE = [
+  { month: "Jan", revenue: 1256000 },
+  { month: "Feb", revenue: 1452000 },
+  { month: "Mar", revenue: 1687000 },
+  { month: "Apr", revenue: 1845000 },
+  { month: "May", revenue: 2124000 },
+  { month: "Jun", revenue: 2356000 },
+  { month: "Jul", revenue: 2532000 },
+  { month: "Aug", revenue: 2745000 },
+  { month: "Sep", revenue: 2854280 }
 ];
 
-const transactionHistory = [
-  { id: 'TXN-001234', user: 'Rohit Sharma', amount: 12500, date: '2023-06-12', status: 'completed', product: 'UPSC Comprehensive Bundle' },
-  { id: 'TXN-001235', user: 'Ananya Patel', amount: 6800, date: '2023-06-12', status: 'completed', product: 'Banking Exam Series' },
-  { id: 'TXN-001236', user: 'Vikram Singh', amount: 15000, date: '2023-06-11', status: 'completed', product: 'One-on-One Mentorship' },
-  { id: 'TXN-001237', user: 'Neha Gupta', amount: 4500, date: '2023-06-11', status: 'completed', product: 'SSC Complete Package' },
-  { id: 'TXN-001238', user: 'Karthik R', amount: 3800, date: '2023-06-10', status: 'completed', product: 'Railways Preparation Kit' },
-  { id: 'TXN-001239', user: 'Priya Verma', amount: 12500, status: 'pending', date: '2023-06-10', product: 'UPSC Comprehensive Bundle' },
-  { id: 'TXN-001240', user: 'Akash Jain', amount: 4500, status: 'failed', date: '2023-06-09', product: 'SSC Complete Package' }
+const RECENT_TRANSACTIONS = [
+  {
+    id: "TRX-001",
+    user: "Rahul Sharma",
+    email: "rahul.s@example.com",
+    product: "UPSC Complete Package",
+    amount: 12500,
+    date: "2023-09-30",
+    status: "completed",
+    paymentMethod: "Credit Card"
+  },
+  {
+    id: "TRX-002",
+    user: "Priya Patel",
+    email: "priya.p@example.com",
+    product: "Banking Exams Bundle",
+    amount: 7500,
+    date: "2023-09-29",
+    status: "completed",
+    paymentMethod: "UPI"
+  },
+  {
+    id: "TRX-003",
+    user: "Amit Singh",
+    email: "amit.s@example.com",
+    product: "SSC Advanced Course",
+    amount: 5500,
+    date: "2023-09-29",
+    status: "completed",
+    paymentMethod: "Net Banking"
+  },
+  {
+    id: "TRX-004",
+    user: "Neha Gupta",
+    email: "neha.g@example.com",
+    product: "Railway Exam Prep",
+    amount: 4500,
+    date: "2023-09-28",
+    status: "completed",
+    paymentMethod: "UPI"
+  },
+  {
+    id: "TRX-005",
+    user: "Vikram Malhotra",
+    email: "vikram.m@example.com",
+    product: "UPSC Complete Package",
+    amount: 12500,
+    date: "2023-09-28",
+    status: "refunded",
+    paymentMethod: "Credit Card"
+  },
+  {
+    id: "TRX-006",
+    user: "Aarti Reddy",
+    email: "aarti.r@example.com",
+    product: "Monthly Premium Plan",
+    amount: 1200,
+    date: "2023-09-27",
+    status: "completed",
+    paymentMethod: "UPI"
+  },
+  {
+    id: "TRX-007",
+    user: "Suresh Kumar",
+    email: "suresh.k@example.com",
+    product: "Banking Exams Bundle",
+    amount: 7500,
+    date: "2023-09-27",
+    status: "pending",
+    paymentMethod: "Net Banking"
+  }
 ];
 
-const projectionData = [
-  { month: 'Jul', projected: 2320000, actual: 0 },
-  { month: 'Aug', projected: 2480000, actual: 0 },
-  { month: 'Sep', projected: 2650000, actual: 0 },
-  { month: 'Oct', projected: 2820000, actual: 0 },
-  { month: 'Nov', projected: 3100000, actual: 0 },
-  { month: 'Dec', projected: 3400000, actual: 0 }
+const SUBSCRIPTION_METRICS = [
+  {
+    name: "Monthly Basic",
+    active: 1850,
+    cancelled: 245,
+    revenue: 925000,
+    churnRate: 3.8
+  },
+  {
+    name: "Monthly Premium",
+    active: 1450,
+    cancelled: 180,
+    revenue: 1740000,
+    churnRate: 4.2
+  },
+  {
+    name: "Annual Basic",
+    active: 450,
+    cancelled: 35,
+    revenue: 540000,
+    churnRate: 1.6
+  },
+  {
+    name: "Annual Premium",
+    active: 368,
+    cancelled: 22,
+    revenue: 734000,
+    churnRate: 1.2
+  }
 ];
 
-const averageRevenuePerUser = [
-  { month: 'Jan', value: 3420 },
-  { month: 'Feb', value: 3650 },
-  { month: 'Mar', value: 3880 },
-  { month: 'Apr', value: 4120 },
-  { month: 'May', value: 4350 },
-  { month: 'Jun', value: 4680 }
+const PAYOUT_HISTORY = [
+  {
+    id: "PAY-001",
+    date: "2023-09-15",
+    amount: 1248500,
+    status: "processed",
+    bankAccount: "HDFC Bank - XXXX4582"
+  },
+  {
+    id: "PAY-002",
+    date: "2023-08-15",
+    amount: 1185000,
+    status: "processed",
+    bankAccount: "HDFC Bank - XXXX4582"
+  },
+  {
+    id: "PAY-003",
+    date: "2023-07-15",
+    amount: 1152000,
+    status: "processed",
+    bankAccount: "HDFC Bank - XXXX4582"
+  },
+  {
+    id: "PAY-004",
+    date: "2023-06-15",
+    amount: 1086500,
+    status: "processed",
+    bankAccount: "HDFC Bank - XXXX4582"
+  },
+  {
+    id: "PAY-005",
+    date: "2023-05-15",
+    amount: 974000,
+    status: "processed",
+    bankAccount: "HDFC Bank - XXXX4582"
+  }
 ];
 
-const RevenuePanel = () => {
-  const [timeRange, setTimeRange] = useState('monthly');
-  const [currentTab, setCurrentTab] = useState('overview');
+const PAYMENT_METHODS = [
+  { name: "UPI", value: 45, color: "#9c88ff" },
+  { name: "Credit Card", value: 30, color: "#4cd137" },
+  { name: "Net Banking", value: 15, color: "#fbc531" },
+  { name: "Debit Card", value: 10, color: "#00a8ff" }
+];
 
+export default function RevenuePanel() {
+  const [timePeriod, setTimePeriod] = useState("month");
+  const [currentTab, setCurrentTab] = useState("overview");
+  
+  const { data: revenueData, isLoading } = useQuery({
+    queryKey: ["/api/revenue"],
+    // Disabled until API is available
+    enabled: false
+  });
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "bg-green-100 text-green-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "refunded":
+        return "bg-red-100 text-red-800";
+      case "processed":
+        return "bg-blue-100 text-blue-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return `₹${amount.toLocaleString()}`;
+  };
+  
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-IN', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+  
   return (
-    <div className="space-y-6">
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        {/* Total Revenue */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(2134800)}</div>
-            <div className="flex items-center text-xs text-green-500 font-medium mt-1">
-              <ArrowUpRight className="mr-1 h-3 w-3" />
-              <span>+14.0% from last month</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* MRR */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Monthly Recurring Revenue</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(1428000)}</div>
-            <div className="flex items-center text-xs text-green-500 font-medium mt-1">
-              <ArrowUpRight className="mr-1 h-3 w-3" />
-              <span>+8.2% from last month</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Average Order Value */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Order Value</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(4680)}</div>
-            <div className="flex items-center text-xs text-green-500 font-medium mt-1">
-              <ArrowUpRight className="mr-1 h-3 w-3" />
-              <span>+7.6% from last month</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Active Subscriptions */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Subscriptions</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">236</div>
-            <div className="flex items-center text-xs text-green-500 font-medium mt-1">
-              <ArrowUpRight className="mr-1 h-3 w-3" />
-              <span>+12.4% from last month</span>
-            </div>
-          </CardContent>
-        </Card>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-semibold">Revenue & Payments</h2>
+        <Select value={timePeriod} onValueChange={setTimePeriod}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select period" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="week">This Week</SelectItem>
+            <SelectItem value="month">This Month</SelectItem>
+            <SelectItem value="quarter">This Quarter</SelectItem>
+            <SelectItem value="year">This Year</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* Time Range Selection */}
-      <div className="flex justify-between items-center">
-        <Tabs defaultValue={currentTab} onValueChange={setCurrentTab} className="w-full">
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="transactions">Transactions</TabsTrigger>
-            <TabsTrigger value="projections">Projections</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        <div className="ml-auto">
-          <Select 
-            defaultValue={timeRange} 
-            onValueChange={(value) => setTimeRange(value)}
-          >
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Select time range" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="weekly">Last 7 Days</SelectItem>
-              <SelectItem value="monthly">Last 30 Days</SelectItem>
-              <SelectItem value="quarterly">Last 90 Days</SelectItem>
-              <SelectItem value="yearly">Year to Date</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <TabsContent value="overview" className="space-y-6">
-        {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Monthly Revenue */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Monthly Revenue</CardTitle>
-              <CardDescription>Total revenue by month</CardDescription>
-            </CardHeader>
-            <CardContent className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={monthlyRevenue}
-                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="month" />
-                  <YAxis tickFormatter={(value) => `₹${value / 1000}K`} />
-                  <Tooltip 
-                    contentStyle={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }}
-                    formatter={(value: number) => [formatCurrency(value), 'Revenue']}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="revenue"
-                    name="Revenue"
-                    stroke="#3b82f6"
-                    fill="#3b82f6"
-                    fillOpacity={0.3}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Revenue by Product */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Revenue by Product</CardTitle>
-              <CardDescription>Distribution across product categories</CardDescription>
-            </CardHeader>
-            <CardContent className="h-80">
-              <div className="flex h-full items-center justify-center">
-                <div className="w-full max-w-md h-full flex flex-col md:flex-row items-center justify-between">
-                  <div className="h-64 w-full max-w-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={revenueByProduct}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={60}
-                          outerRadius={80}
-                          paddingAngle={5}
-                          dataKey="value"
-                          nameKey="name"
-                        >
-                          {revenueByProduct.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={PRODUCT_COLORS[index % PRODUCT_COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          contentStyle={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }}
-                          formatter={(value: number) => [`${value}%`, 'Percentage']}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
+      <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="transactions">Transactions</TabsTrigger>
+          <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
+          <TabsTrigger value="payouts">Payouts</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="overview" className="p-0 pt-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {REVENUE_OVERVIEW.map((item) => (
+              <Card key={item.name}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    {item.name}
+                  </CardTitle>
+                  <item.icon className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {formatCurrency(item.value)}
                   </div>
-
-                  <div className="space-y-4 mt-6 md:mt-0">
-                    {revenueByProduct.map((entry, index) => (
-                      <div key={entry.name} className="flex items-center">
-                        <div 
-                          className="w-3 h-3 rounded-full mr-2" 
-                          style={{ backgroundColor: PRODUCT_COLORS[index % PRODUCT_COLORS.length] }}
-                        ></div>
-                        <div className="flex items-center justify-between w-full min-w-[150px]">
-                          <span className="text-sm font-medium">{entry.name}</span>
-                          <span className="text-sm text-gray-500">{entry.value}%</span>
+                  <div className="flex items-center pt-1">
+                    <ArrowUpRight className="mr-1 h-4 w-4 text-green-500" />
+                    <p className="text-xs text-green-500">
+                      {item.change}% from previous {item.period}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <Card className="col-span-1">
+              <CardHeader>
+                <CardTitle>Revenue Distribution</CardTitle>
+                <CardDescription>
+                  Breakdown by product category
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-2">
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={REVENUE_BY_PRODUCT}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        paddingAngle={5}
+                        dataKey="value"
+                        label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {REVENUE_BY_PRODUCT.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => [formatCurrency(value as number), "Revenue"]} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+              <CardFooter className="border-t p-4">
+                <Button variant="outline" className="w-full">View Product Analytics</Button>
+              </CardFooter>
+            </Card>
+            
+            <Card className="col-span-1">
+              <CardHeader>
+                <CardTitle>Revenue Trend</CardTitle>
+                <CardDescription>
+                  Monthly revenue for the current year
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-2">
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={MONTHLY_REVENUE}
+                      margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                    >
+                      <XAxis dataKey="month" />
+                      <YAxis tickFormatter={(value) => `₹${(value / 1000000).toFixed(1)}M`} />
+                      <Tooltip formatter={(value) => [formatCurrency(value as number), "Revenue"]} />
+                      <Bar 
+                        dataKey="revenue" 
+                        name="Revenue" 
+                        fill="url(#colorGradient)" 
+                        radius={[4, 4, 0, 0]}
+                      />
+                      <defs>
+                        <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3498db" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="#3498db" stopOpacity={0.4}/>
+                        </linearGradient>
+                      </defs>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+              <CardFooter className="border-t p-4">
+                <Button variant="outline" className="w-full">View Financial Reports</Button>
+              </CardFooter>
+            </Card>
+          </div>
+          
+          <div className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Payment Methods</CardTitle>
+                <CardDescription>
+                  Distribution of revenue by payment method
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-2">
+                <div className="grid md:grid-cols-4 gap-4">
+                  {PAYMENT_METHODS.map((method) => (
+                    <div key={method.name} className="flex flex-col space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">{method.name}</span>
+                        <span className="text-sm font-medium">{method.value}%</span>
+                      </div>
+                      <Progress 
+                        value={method.value} 
+                        className="h-2" 
+                        style={{ backgroundColor: `${method.color}40` }}
+                        indicatorClassName="h-full" 
+                        style={{ backgroundColor: method.color }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="transactions" className="p-0 pt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Transactions</CardTitle>
+              <CardDescription>
+                Overview of recent payment transactions
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Transaction ID</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Product</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Payment Method</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {RECENT_TRANSACTIONS.map((transaction) => (
+                    <TableRow key={transaction.id}>
+                      <TableCell className="font-medium">{transaction.id}</TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{transaction.user}</p>
+                          <p className="text-sm text-muted-foreground">{transaction.email}</p>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+                      </TableCell>
+                      <TableCell>{transaction.product}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center">
+                          <IndianRupee className="h-4 w-4 mr-1 text-muted-foreground" />
+                          {transaction.amount.toLocaleString()}
+                        </div>
+                      </TableCell>
+                      <TableCell>{formatDate(transaction.date)}</TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant="outline" 
+                          className={getStatusColor(transaction.status)}
+                        >
+                          {transaction.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{transaction.paymentMethod}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
+            <CardFooter className="border-t p-4 flex justify-between">
+              <Button variant="outline">Previous</Button>
+              <div className="flex items-center gap-2">
+                <Select defaultValue="10">
+                  <SelectTrigger className="w-[80px]">
+                    <SelectValue placeholder="Rows" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                    <SelectItem value="100">100</SelectItem>
+                  </SelectContent>
+                </Select>
+                <span className="text-sm text-muted-foreground">Showing 1-7 of 125 transactions</span>
+              </div>
+              <Button variant="outline">Next</Button>
+            </CardFooter>
           </Card>
-        </div>
-
-        {/* Second Row of Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Subscription Types */}
+        </TabsContent>
+        
+        <TabsContent value="subscriptions" className="p-0 pt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Subscription Growth</CardTitle>
-              <CardDescription>Growth by subscription type</CardDescription>
+              <CardTitle>Subscription Metrics</CardTitle>
+              <CardDescription>
+                Active subscriptions, revenue, and churn rates
+              </CardDescription>
             </CardHeader>
-            <CardContent className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={subscriptionData}
-                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                  barSize={20}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip 
-                    contentStyle={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }}
-                  />
-                  <Legend />
-                  <Bar 
-                    dataKey="monthly" 
-                    name="Monthly" 
-                    stackId="a"
-                    fill="#8884d8" 
-                  />
-                  <Bar 
-                    dataKey="quarterly" 
-                    name="Quarterly" 
-                    stackId="a"
-                    fill="#82ca9d" 
-                  />
-                  <Bar 
-                    dataKey="annual" 
-                    name="Annual" 
-                    stackId="a"
-                    fill="#ffc658" 
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Plan Name</TableHead>
+                    <TableHead>Active Subscriptions</TableHead>
+                    <TableHead>Cancelled</TableHead>
+                    <TableHead>Revenue</TableHead>
+                    <TableHead>Churn Rate</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {SUBSCRIPTION_METRICS.map((subscription) => (
+                    <TableRow key={subscription.name}>
+                      <TableCell className="font-medium">{subscription.name}</TableCell>
+                      <TableCell>{subscription.active.toLocaleString()}</TableCell>
+                      <TableCell>{subscription.cancelled.toLocaleString()}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center">
+                          <IndianRupee className="h-4 w-4 mr-1 text-muted-foreground" />
+                          {subscription.revenue.toLocaleString()}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <span className={`mr-2 ${subscription.churnRate > 3 ? 'text-red-500' : 'text-green-500'}`}>
+                            {subscription.churnRate}%
+                          </span>
+                          <div className="h-2 w-24 bg-gray-200 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full ${subscription.churnRate > 3 ? 'bg-red-500' : 'bg-green-500'}`}
+                              style={{ width: `${subscription.churnRate * 10}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
+            <CardFooter className="border-t p-4">
+              <Button variant="outline" className="w-full">View Detailed Subscription Analytics</Button>
+            </CardFooter>
           </Card>
-
-          {/* Average Revenue Per User */}
+          
+          <div className="mt-4 grid md:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Subscription Growth</CardTitle>
+                <CardDescription>
+                  Monthly active subscriptions
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-2">
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={[
+                        { month: "Jan", subscriptions: 2850 },
+                        { month: "Feb", subscriptions: 3150 },
+                        { month: "Mar", subscriptions: 3450 },
+                        { month: "Apr", subscriptions: 3650 },
+                        { month: "May", subscriptions: 3850 },
+                        { month: "Jun", subscriptions: 3950 },
+                        { month: "Jul", subscriptions: 4050 },
+                        { month: "Aug", subscriptions: 4120 },
+                        { month: "Sep", subscriptions: 4118 }
+                      ]}
+                    >
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip formatter={(value) => [`${value} subscriptions`, ""]} />
+                      <Line
+                        type="monotone"
+                        dataKey="subscriptions"
+                        stroke="#3498db"
+                        strokeWidth={2}
+                        dot={{ r: 4 }}
+                        activeDot={{ r: 8 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Subscription Churn</CardTitle>
+                <CardDescription>
+                  Monthly cancellation rates
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-2">
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={[
+                        { month: "Jan", churnRate: 4.2 },
+                        { month: "Feb", churnRate: 4.0 },
+                        { month: "Mar", churnRate: 3.8 },
+                        { month: "Apr", churnRate: 3.5 },
+                        { month: "May", churnRate: 3.2 },
+                        { month: "Jun", churnRate: 3.0 },
+                        { month: "Jul", churnRate: 2.9 },
+                        { month: "Aug", churnRate: 2.8 },
+                        { month: "Sep", churnRate: 2.7 }
+                      ]}
+                    >
+                      <XAxis dataKey="month" />
+                      <YAxis domain={[0, 5]} tickFormatter={(value) => `${value}%`} />
+                      <Tooltip formatter={(value) => [`${value}%`, "Churn Rate"]} />
+                      <Line
+                        type="monotone"
+                        dataKey="churnRate"
+                        stroke="#e74c3c"
+                        strokeWidth={2}
+                        dot={{ r: 4 }}
+                        activeDot={{ r: 8 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="payouts" className="p-0 pt-4">
+          <div className="grid md:grid-cols-2 gap-4 mb-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Pending Balance</CardTitle>
+                <CardDescription>
+                  Revenue pending for next payout
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-4xl font-bold mb-4">
+                  {formatCurrency(1462980)}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  <p>Next scheduled payout on <span className="font-medium">October 15, 2023</span></p>
+                  <p className="mt-1">Total monthly revenue: {formatCurrency(2854280)}</p>
+                  <p className="mt-1">Platform fee (5%): {formatCurrency(142714)}</p>
+                </div>
+                <div className="mt-4">
+                  <p className="mb-2 text-sm text-muted-foreground">Payout progress</p>
+                  <Progress value={51} className="h-2" />
+                  <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                    <span>0%</span>
+                    <span>51% complete</span>
+                    <span>100%</span>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="border-t p-4">
+                <Button variant="outline" className="w-full">Request Early Payout</Button>
+              </CardFooter>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Payout Account</CardTitle>
+                <CardDescription>
+                  Bank account for receiving payouts
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-gray-50 p-4 rounded-md border border-border">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-medium">HDFC Bank</h3>
+                    <Badge variant="outline" className="bg-green-100 text-green-800">
+                      Active
+                    </Badge>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Account Number</span>
+                      <span className="font-medium">XXXX XXXX 4582</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Account Type</span>
+                      <span className="font-medium">Current Account</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Account Holder</span>
+                      <span className="font-medium">Mock Test Platform Pvt. Ltd.</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">IFSC Code</span>
+                      <span className="font-medium">HDFC0001234</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="border-t p-4">
+                <Button variant="outline" className="w-full">Update Bank Account</Button>
+              </CardFooter>
+            </Card>
+          </div>
+          
           <Card>
             <CardHeader>
-              <CardTitle>Average Revenue Per User</CardTitle>
-              <CardDescription>Monthly ARPU trend</CardDescription>
+              <CardTitle>Payout History</CardTitle>
+              <CardDescription>
+                Record of past payouts to your account
+              </CardDescription>
             </CardHeader>
-            <CardContent className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={averageRevenuePerUser}
-                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="month" />
-                  <YAxis tickFormatter={(value) => `₹${value}`} />
-                  <Tooltip 
-                    contentStyle={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }}
-                    formatter={(value: number) => [formatCurrency(value), 'ARPU']}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="value"
-                    name="ARPU"
-                    stroke="#ff7300"
-                    strokeWidth={2}
-                    dot={{ r: 4 }}
-                    activeDot={{ r: 6 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Products Breakdown */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Top Revenue Generators</CardTitle>
-            <CardDescription>Products with highest revenue contribution</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead className="text-right">Price</TableHead>
-                  <TableHead className="text-right">Sales</TableHead>
-                  <TableHead className="text-right">Revenue</TableHead>
-                  <TableHead className="text-right">Growth</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {revenueBreakdown.map((product) => (
-                  <TableRow key={product.title}>
-                    <TableCell className="font-medium">{product.title}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(product.price)}</TableCell>
-                    <TableCell className="text-right">{product.sales}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(product.revenue)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end">
-                        <span className="text-green-500">{product.growth}</span>
-                      </div>
-                    </TableCell>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Payout ID</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Bank Account</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-
-        {/* Payment Methods */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Payment Methods</CardTitle>
-            <CardDescription>Revenue distribution by payment method</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {paymentMethodsData.map((method) => (
-                <div key={method.method} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">{method.method}</span>
-                    <span className="text-sm font-medium">{method.percentage}%</span>
-                  </div>
-                  <div className="h-2 bg-slate-100 rounded-full">
-                    <div
-                      className="h-2 bg-primary rounded-full"
-                      style={{ width: `${method.percentage}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </TabsContent>
-
-      <TabsContent value="transactions" className="space-y-6">
-        {/* Transaction History */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
-            <CardDescription>Latest payment transactions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Transaction ID</TableHead>
-                  <TableHead>User</TableHead>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead className="text-right">Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {transactionHistory.map((transaction) => (
-                  <TableRow key={transaction.id}>
-                    <TableCell className="font-medium">{transaction.id}</TableCell>
-                    <TableCell>{transaction.user}</TableCell>
-                    <TableCell>{transaction.product}</TableCell>
-                    <TableCell>{new Date(transaction.date).toLocaleDateString()}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(transaction.amount)}</TableCell>
-                    <TableCell className="text-right">
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        transaction.status === 'completed' 
-                          ? 'bg-green-100 text-green-800' 
-                          : transaction.status === 'pending'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            <div className="mt-4 flex justify-center">
-              <Button variant="outline">View All Transactions</Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Transaction Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Transaction Success Rate</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">94.8%</div>
-              <div className="flex items-center text-xs text-green-500 font-medium mt-1">
-                <ArrowUpRight className="mr-1 h-3 w-3" />
-                <span>+1.2% from last month</span>
-              </div>
-              <div className="mt-4 text-sm text-muted-foreground">
-                428 successful out of 451 total transactions
-              </div>
+                </TableHeader>
+                <TableBody>
+                  {PAYOUT_HISTORY.map((payout) => (
+                    <TableRow key={payout.id}>
+                      <TableCell className="font-medium">{payout.id}</TableCell>
+                      <TableCell>{formatDate(payout.date)}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center">
+                          <IndianRupee className="h-4 w-4 mr-1 text-muted-foreground" />
+                          {payout.amount.toLocaleString()}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant="outline" 
+                          className={getStatusColor(payout.status)}
+                        >
+                          {payout.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{payout.bankAccount}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
+            <CardFooter className="border-t p-4">
+              <Button variant="outline" className="w-full">Download Payout Reports</Button>
+            </CardFooter>
           </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Average Processing Time</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">2.4s</div>
-              <div className="flex items-center text-xs text-green-500 font-medium mt-1">
-                <ArrowDownRight className="mr-1 h-3 w-3" />
-                <span>-0.3s from last month</span>
-              </div>
-              <div className="mt-4 text-sm text-muted-foreground">
-                Fastest: 1.2s | Slowest: 5.8s
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Failed Transaction Rate</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">3.1%</div>
-              <div className="flex items-center text-xs text-green-500 font-medium mt-1">
-                <ArrowDownRight className="mr-1 h-3 w-3" />
-                <span>-0.8% from last month</span>
-              </div>
-              <div className="mt-4 text-sm text-muted-foreground">
-                Main reason: Payment gateway timeout (68%)
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </TabsContent>
-
-      <TabsContent value="projections" className="space-y-6">
-        {/* Revenue Projections */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Revenue Projections</CardTitle>
-            <CardDescription>Projected vs actual revenue for next 6 months</CardDescription>
-          </CardHeader>
-          <CardContent className="h-96">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={projectionData}
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                barSize={30}
-              >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="month" />
-                <YAxis tickFormatter={(value) => `₹${value / 1000}K`} />
-                <Tooltip 
-                  contentStyle={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }}
-                  formatter={(value: number) => [formatCurrency(value), '']}
-                />
-                <Legend />
-                <Bar 
-                  dataKey="projected" 
-                  name="Projected Revenue" 
-                  fill="#8884d8" 
-                  radius={[4, 4, 0, 0]}
-                />
-                <Bar 
-                  dataKey="actual" 
-                  name="Actual Revenue" 
-                  fill="#82ca9d" 
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Growth Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Expected Revenue Growth</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">+18.4%</div>
-              <div className="flex items-center text-xs text-muted-foreground mt-1">
-                <span>Year-over-year</span>
-              </div>
-              <div className="mt-6 flex items-center">
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs">Q3 2023</span>
-                    <span className="text-xs font-medium">+15.8%</span>
-                  </div>
-                  <div className="h-1.5 bg-slate-100 rounded-full">
-                    <div
-                      className="h-1.5 bg-blue-500 rounded-full"
-                      style={{ width: '78%' }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-3 flex items-center">
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs">Q4 2023</span>
-                    <span className="text-xs font-medium">+21.2%</span>
-                  </div>
-                  <div className="h-1.5 bg-slate-100 rounded-full">
-                    <div
-                      className="h-1.5 bg-blue-500 rounded-full"
-                      style={{ width: '92%' }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Projected ARR</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(18624000)}</div>
-              <div className="flex items-center text-xs text-green-500 font-medium mt-1">
-                <ArrowUpRight className="mr-1 h-3 w-3" />
-                <span>+22.6% from current</span>
-              </div>
-              <div className="mt-6 space-y-2">
-                <div className="flex items-center gap-2">
-                  <ArrowUp className="h-4 w-4 text-green-500" />
-                  <div className="flex-1 text-sm text-muted-foreground">
-                    <span className="font-medium text-foreground">Key growth factors:</span> Course bundle sales, corporate partnerships
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-amber-500" />
-                  <div className="flex-1 text-sm text-muted-foreground">
-                    <span className="font-medium text-foreground">Projection confidence:</span> High (83%)
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Key Growth Opportunities</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <Plus className="h-5 w-5 text-green-500 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium">Enterprise Partnerships</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Potential +₹42L additional revenue in Q4
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Plus className="h-5 w-5 text-green-500 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium">New Exam Categories</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Projected +₹28L revenue in first year
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Minus className="h-5 w-5 text-red-500 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium">Risk: Increased Competition</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Potential -12% growth impact if not addressed
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </TabsContent>
+        </TabsContent>
+      </Tabs>
     </div>
   );
-};
-
-export default RevenuePanel;
+}

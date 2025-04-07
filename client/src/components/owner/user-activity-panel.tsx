@@ -1,412 +1,587 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ResponsiveContainer, PieChart, Pie, Cell, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
-import { Activity, Users, BookOpen, Clock } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, LineChart, Line } from "recharts";
+import { 
+  Users, 
+  Clock, 
+  CalendarDays, 
+  BookOpen,
+  ArrowUpRight,
+  Calendar
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+
+// Temporary mock data
+const USER_ACTIVITY_OVERVIEW = [
+  {
+    name: "Active Users",
+    value: 4523,
+    icon: Users,
+    change: 12.5,
+    trend: "up",
+    period: "month"
+  },
+  {
+    name: "Average Session Time",
+    value: 45.8,
+    icon: Clock,
+    change: 5.2,
+    trend: "up",
+    period: "month"
+  },
+  {
+    name: "Total Study Hours",
+    value: 128450,
+    icon: BookOpen,
+    change: 18.4,
+    trend: "up",
+    period: "month"
+  },
+  {
+    name: "Active Subscriptions",
+    value: 2150,
+    icon: CalendarDays,
+    change: 7.8,
+    trend: "up",
+    period: "month"
+  }
+];
+
+const USER_ACTIVITY_TREND = [
+  { date: "2023-09-01", activeUsers: 3850, studyHours: 97500 },
+  { date: "2023-09-05", activeUsers: 3950, studyHours: 102000 },
+  { date: "2023-09-10", activeUsers: 4050, studyHours: 108500 },
+  { date: "2023-09-15", activeUsers: 4210, studyHours: 114000 },
+  { date: "2023-09-20", activeUsers: 4380, studyHours: 120500 },
+  { date: "2023-09-25", activeUsers: 4450, studyHours: 124800 },
+  { date: "2023-09-30", activeUsers: 4523, studyHours: 128450 }
+];
+
+const USER_BY_ROLE = [
+  { name: "Student", value: 11850, color: "#3498db" },
+  { name: "Educator", value: 650, color: "#2ecc71" },
+  { name: "Owner", value: 68, color: "#9b59b6" }
+];
+
+const USER_BY_SUBSCRIPTION = [
+  { name: "Free", value: 8450, color: "#e74c3c" },
+  { name: "Monthly Basic", value: 1850, color: "#f39c12" },
+  { name: "Monthly Premium", value: 1450, color: "#3498db" },
+  { name: "Annual Basic", value: 450, color: "#2ecc71" },
+  { name: "Annual Premium", value: 368, color: "#9b59b6" }
+];
+
+const RECENT_ACTIVITIES = [
+  {
+    id: 1,
+    user: {
+      name: "Rahul Sharma",
+      email: "rahul.s@example.com",
+      avatarUrl: ""
+    },
+    activity: "Completed Test",
+    details: "UPSC Prelims Mock Test 5",
+    time: "10 minutes ago",
+    score: "78%"
+  },
+  {
+    id: 2,
+    user: {
+      name: "Priya Patel",
+      email: "priya.p@example.com",
+      avatarUrl: ""
+    },
+    activity: "Purchased Course",
+    details: "Banking Exams Bundle",
+    time: "25 minutes ago",
+    amount: "₹7,500"
+  },
+  {
+    id: 3,
+    user: {
+      name: "Amit Singh",
+      email: "amit.s@example.com",
+      avatarUrl: ""
+    },
+    activity: "Started Course",
+    details: "SSC Advanced Course",
+    time: "45 minutes ago"
+  },
+  {
+    id: 4,
+    user: {
+      name: "Neha Gupta",
+      email: "neha.g@example.com",
+      avatarUrl: ""
+    },
+    activity: "Added Flashcards",
+    details: "Created 25 flashcards for Economics",
+    time: "1 hour ago"
+  },
+  {
+    id: 5,
+    user: {
+      name: "Vikram Malhotra",
+      email: "vikram.m@example.com",
+      avatarUrl: ""
+    },
+    activity: "Completed Mock Interview",
+    details: "Banking Interview Preparation",
+    time: "2 hours ago",
+    score: "85%"
+  },
+  {
+    id: 6,
+    user: {
+      name: "Aarti Reddy",
+      email: "aarti.r@example.com",
+      avatarUrl: ""
+    },
+    activity: "Renewed Subscription",
+    details: "Monthly Premium Plan",
+    time: "3 hours ago",
+    amount: "₹1,200"
+  },
+  {
+    id: 7,
+    user: {
+      name: "Suresh Kumar",
+      email: "suresh.k@example.com",
+      avatarUrl: ""
+    },
+    activity: "Joined Study Group",
+    details: "UPSC Daily Discussion Group",
+    time: "5 hours ago"
+  }
+];
+
+const TOP_PERFORMING_USERS = [
+  {
+    id: 1,
+    user: {
+      name: "Rahul Sharma",
+      email: "rahul.s@example.com",
+      avatarUrl: ""
+    },
+    testsCompleted: 28,
+    avgScore: 92,
+    studyHours: 145,
+    subscription: "Annual Premium"
+  },
+  {
+    id: 2,
+    user: {
+      name: "Priya Patel",
+      email: "priya.p@example.com",
+      avatarUrl: ""
+    },
+    testsCompleted: 25,
+    avgScore: 89,
+    studyHours: 132,
+    subscription: "Annual Premium"
+  },
+  {
+    id: 3,
+    user: {
+      name: "Amit Singh",
+      email: "amit.s@example.com",
+      avatarUrl: ""
+    },
+    testsCompleted: 22,
+    avgScore: 86,
+    studyHours: 128,
+    subscription: "Monthly Premium"
+  },
+  {
+    id: 4,
+    user: {
+      name: "Neha Gupta",
+      email: "neha.g@example.com",
+      avatarUrl: ""
+    },
+    testsCompleted: 20,
+    avgScore: 85,
+    studyHours: 120,
+    subscription: "Annual Basic"
+  },
+  {
+    id: 5,
+    user: {
+      name: "Vikram Malhotra",
+      email: "vikram.m@example.com",
+      avatarUrl: ""
+    },
+    testsCompleted: 18,
+    avgScore: 84,
+    studyHours: 115,
+    subscription: "Monthly Premium"
+  }
+];
 
 export default function UserActivityPanel() {
-  const [timeRange, setTimeRange] = useState("weekly");
+  const [timePeriod, setTimePeriod] = useState("month");
+  const [currentTab, setCurrentTab] = useState("overview");
+  
+  const { data: userActivityData, isLoading } = useQuery({
+    queryKey: ["/api/user-activity"],
+    // Disabled until API is available
+    enabled: false
+  });
 
-  // Mock data for demonstration
-  const activeUserData = {
-    daily: 78,
-    weekly: 549,
-    monthly: 2345,
-    yearly: 28500
+  const getActivityBadgeColor = (activity: string) => {
+    switch (activity) {
+      case "Completed Test":
+        return "bg-green-100 text-green-800";
+      case "Purchased Course":
+      case "Renewed Subscription":
+        return "bg-blue-100 text-blue-800";
+      case "Started Course":
+        return "bg-purple-100 text-purple-800";
+      case "Added Flashcards":
+        return "bg-yellow-100 text-yellow-800";
+      case "Completed Mock Interview":
+        return "bg-indigo-100 text-indigo-800";
+      case "Joined Study Group":
+        return "bg-pink-100 text-pink-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
   };
 
-  const loggedInUserData = {
-    daily: 128,
-    weekly: 892,
-    monthly: 3780,
-    yearly: 45600
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
-
-  const purchasesData = [
-    { name: "Purchased", value: 63, color: "#4ade80" },
-    { name: "Free Only", value: 37, color: "#f97316" }
-  ];
-
-  const engagementData = [
-    { name: "Tests", value: 45, color: "#0ea5e9" },
-    { name: "PDF Courses", value: 25, color: "#8b5cf6" },
-    { name: "Flashcards", value: 20, color: "#ec4899" },
-    { name: "Current Affairs", value: 10, color: "#f97316" }
-  ];
-
-  const timeSeriesData = [
-    { name: "Jan", users: 4000, active: 2400 },
-    { name: "Feb", users: 3000, active: 1398 },
-    { name: "Mar", users: 2000, active: 9800 },
-    { name: "Apr", users: 2780, active: 3908 },
-    { name: "May", users: 1890, active: 4800 },
-    { name: "Jun", users: 2390, active: 3800 },
-    { name: "Jul", users: 3490, active: 4300 }
-  ];
-
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
-
+  
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeUserData[timeRange]}</div>
-            <p className="text-xs text-muted-foreground">
-              Users who have been active in the last 24 hours
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Total Logged-in Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{loggedInUserData[timeRange]}</div>
-            <p className="text-xs text-muted-foreground">
-              Users who have logged in at least once
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Tests Attempted</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {timeRange === "daily" && "124"}
-              {timeRange === "weekly" && "876"}
-              {timeRange === "monthly" && "3,542"}
-              {timeRange === "yearly" && "42,360"}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Total tests attempted by users
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Avg. Time Spent</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {timeRange === "daily" && "42m"}
-              {timeRange === "weekly" && "38m"}
-              {timeRange === "monthly" && "45m"}
-              {timeRange === "yearly" && "40m"}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Average time spent per session
-            </p>
-          </CardContent>
-        </Card>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-semibold">User Activity & Engagement</h2>
+        <Select value={timePeriod} onValueChange={setTimePeriod}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select period" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="week">This Week</SelectItem>
+            <SelectItem value="month">This Month</SelectItem>
+            <SelectItem value="quarter">This Quarter</SelectItem>
+            <SelectItem value="year">This Year</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
+      <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="purchases">Purchases</TabsTrigger>
-          <TabsTrigger value="engagement">Engagement</TabsTrigger>
+          <TabsTrigger value="activities">User Activities</TabsTrigger>
+          <TabsTrigger value="demographics">Demographics</TabsTrigger>
+          <TabsTrigger value="performance">Top Performers</TabsTrigger>
         </TabsList>
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4">
+        
+        <TabsContent value="overview" className="p-0 pt-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {USER_ACTIVITY_OVERVIEW.map((item) => (
+              <Card key={item.name}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    {item.name}
+                  </CardTitle>
+                  <item.icon className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {item.name === "Average Session Time" 
+                      ? `${item.value} min`
+                      : item.value.toLocaleString()}
+                  </div>
+                  <div className="flex items-center pt-1">
+                    <ArrowUpRight className="mr-1 h-4 w-4 text-green-500" />
+                    <p className="text-xs text-green-500">
+                      {item.change}% from previous {item.period}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <Card className="col-span-1">
               <CardHeader>
-                <CardTitle>User Growth</CardTitle>
-              </CardHeader>
-              <CardContent className="pl-2">
-                <ResponsiveContainer width="100%" height={350}>
-                  <BarChart
-                    data={timeSeriesData}
-                    margin={{
-                      top: 5,
-                      right: 30,
-                      left: 20,
-                      bottom: 5,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="users" fill="#8884d8" name="Total Users" />
-                    <Bar dataKey="active" fill="#82ca9d" name="Active Users" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-            <Card className="col-span-3">
-              <CardHeader>
-                <CardTitle>Time Range</CardTitle>
+                <CardTitle>User Distribution</CardTitle>
                 <CardDescription>
-                  Select a time range to view metrics
+                  Breakdown by user role
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => setTimeRange("daily")}
-                    className={`px-4 py-2 text-sm font-medium rounded-md ${
-                      timeRange === "daily"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary"
-                    }`}
-                  >
-                    Daily
-                  </button>
-                  <button
-                    onClick={() => setTimeRange("weekly")}
-                    className={`px-4 py-2 text-sm font-medium rounded-md ${
-                      timeRange === "weekly"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary"
-                    }`}
-                  >
-                    Weekly
-                  </button>
-                  <button
-                    onClick={() => setTimeRange("monthly")}
-                    className={`px-4 py-2 text-sm font-medium rounded-md ${
-                      timeRange === "monthly"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary"
-                    }`}
-                  >
-                    Monthly
-                  </button>
-                  <button
-                    onClick={() => setTimeRange("yearly")}
-                    className={`px-4 py-2 text-sm font-medium rounded-md ${
-                      timeRange === "yearly"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary"
-                    }`}
-                  >
-                    Yearly
-                  </button>
-                </div>
-                <div className="mt-6">
-                  <h3 className="text-lg font-medium">Summary</h3>
-                  <ul className="mt-2 space-y-2">
-                    <li className="flex justify-between">
-                      <span className="text-muted-foreground">Total Users:</span>
-                      <span className="font-medium">
-                        {timeRange === "daily" && "150"}
-                        {timeRange === "weekly" && "1,250"}
-                        {timeRange === "monthly" && "5,200"}
-                        {timeRange === "yearly" && "62,400"}
-                      </span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="text-muted-foreground">New Registrations:</span>
-                      <span className="font-medium">
-                        {timeRange === "daily" && "12"}
-                        {timeRange === "weekly" && "87"}
-                        {timeRange === "monthly" && "342"}
-                        {timeRange === "yearly" && "4,104"}
-                      </span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="text-muted-foreground">Return Rate:</span>
-                      <span className="font-medium">
-                        {timeRange === "daily" && "52%"}
-                        {timeRange === "weekly" && "68%"}
-                        {timeRange === "monthly" && "73%"}
-                        {timeRange === "yearly" && "76%"}
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-        <TabsContent value="analytics" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-            <Card className="col-span-1">
-              <CardHeader>
-                <CardTitle>Most Active Times</CardTitle>
-                <CardDescription>When users are most active</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[300px] flex items-center justify-center">
-                  <p className="text-muted-foreground text-sm text-center">
-                    Peak activity observed between 6PM - 10PM <br />
-                    Weekends show 40% higher engagement
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="col-span-1">
-              <CardHeader>
-                <CardTitle>User Retention</CardTitle>
-                <CardDescription>How many users come back</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[300px] flex flex-col items-center justify-center">
-                  <div className="text-4xl font-bold">72%</div>
-                  <p className="text-muted-foreground text-sm text-center mt-2">
-                    30-day retention rate <br />
-                    11% improvement over last quarter
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-        <TabsContent value="purchases" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Purchases Breakdown</CardTitle>
-                <CardDescription>Paid vs Free users</CardDescription>
-              </CardHeader>
-              <CardContent className="flex justify-center">
-                <div className="h-[300px] w-full max-w-md">
+              <CardContent className="px-2">
+                <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={purchasesData}
+                        data={USER_BY_ROLE}
                         cx="50%"
                         cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        innerRadius={60}
                         outerRadius={100}
-                        fill="#8884d8"
+                        paddingAngle={5}
                         dataKey="value"
+                        label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
                       >
-                        {purchasesData.map((entry, index) => (
+                        {USER_BY_ROLE.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip />
+                      <Tooltip formatter={(value) => [value.toLocaleString(), "Users"]} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
               </CardContent>
+              <CardFooter className="border-t p-4">
+                <Button variant="outline" className="w-full">View User Management</Button>
+              </CardFooter>
             </Card>
-            <Card>
+            
+            <Card className="col-span-1">
               <CardHeader>
-                <CardTitle>Most Popular Purchases</CardTitle>
-                <CardDescription>Top selling offerings</CardDescription>
+                <CardTitle>Activity Trend</CardTitle>
+                <CardDescription>
+                  User activity for the current month
+                </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">Mock Test Bundle</span>
-                    <span className="text-sm text-muted-foreground">42%</span>
-                  </div>
-                  <div className="w-full bg-secondary rounded-full h-2.5">
-                    <div className="bg-primary h-2.5 rounded-full" style={{ width: '42%' }}></div>
-                  </div>
-                  
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">Complete Course</span>
-                    <span className="text-sm text-muted-foreground">28%</span>
-                  </div>
-                  <div className="w-full bg-secondary rounded-full h-2.5">
-                    <div className="bg-primary h-2.5 rounded-full" style={{ width: '28%' }}></div>
-                  </div>
-                  
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">Topic-wise Tests</span>
-                    <span className="text-sm text-muted-foreground">18%</span>
-                  </div>
-                  <div className="w-full bg-secondary rounded-full h-2.5">
-                    <div className="bg-primary h-2.5 rounded-full" style={{ width: '18%' }}></div>
-                  </div>
-                  
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">Mentor Sessions</span>
-                    <span className="text-sm text-muted-foreground">12%</span>
-                  </div>
-                  <div className="w-full bg-secondary rounded-full h-2.5">
-                    <div className="bg-primary h-2.5 rounded-full" style={{ width: '12%' }}></div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-        <TabsContent value="engagement" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Content Engagement</CardTitle>
-                <CardDescription>What users are engaging with</CardDescription>
-              </CardHeader>
-              <CardContent className="flex justify-center">
-                <div className="h-[300px] w-full max-w-md">
+              <CardContent className="px-2">
+                <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={engagementData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={100}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {engagementData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
+                    <LineChart data={USER_ACTIVITY_TREND}>
+                      <XAxis 
+                        dataKey="date" 
+                        tickFormatter={formatDate}
+                      />
+                      <YAxis yAxisId="left" />
+                      <YAxis yAxisId="right" orientation="right" />
+                      <Tooltip 
+                        formatter={(value) => [value.toLocaleString(), ""]}
+                        labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                      />
                       <Legend />
+                      <Line
+                        yAxisId="left"
+                        type="monotone"
+                        dataKey="activeUsers"
+                        stroke="#3498db"
+                        name="Active Users"
+                        strokeWidth={2}
+                        dot={{ r: 4 }}
+                        activeDot={{ r: 8 }}
+                      />
+                      <Line
+                        yAxisId="right"
+                        type="monotone"
+                        dataKey="studyHours"
+                        stroke="#2ecc71"
+                        name="Study Hours"
+                        strokeWidth={2}
+                        dot={{ r: 4 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+              <CardFooter className="border-t p-4">
+                <Button variant="outline" className="w-full">View Detailed Analytics</Button>
+              </CardFooter>
+            </Card>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="activities" className="p-0 pt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent User Activities</CardTitle>
+              <CardDescription>
+                Track the latest actions taken by users on the platform
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User</TableHead>
+                    <TableHead>Activity</TableHead>
+                    <TableHead>Details</TableHead>
+                    <TableHead>Time</TableHead>
+                    <TableHead>Additional Info</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {RECENT_ACTIVITIES.map((activity) => (
+                    <TableRow key={activity.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={activity.user.avatarUrl} />
+                            <AvatarFallback>{activity.user.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{activity.user.name}</p>
+                            <p className="text-sm text-muted-foreground">{activity.user.email}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant="outline" 
+                          className={getActivityBadgeColor(activity.activity)}
+                        >
+                          {activity.activity}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{activity.details}</TableCell>
+                      <TableCell>{activity.time}</TableCell>
+                      <TableCell>
+                        {activity.score && <span className="font-medium">Score: {activity.score}</span>}
+                        {activity.amount && <span className="font-medium">Amount: {activity.amount}</span>}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+            <CardFooter className="border-t p-4 flex justify-between">
+              <Button variant="outline">Previous</Button>
+              <Button variant="outline">Next</Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="demographics" className="p-0 pt-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Subscription Distribution</CardTitle>
+                <CardDescription>
+                  Breakdown by subscription plan
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-2">
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={USER_BY_SUBSCRIPTION}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={120}
+                        dataKey="value"
+                        label={({name, value, percent}) => 
+                          `${name}: ${value} (${(percent * 100).toFixed(0)}%)`
+                        }
+                      >
+                        {USER_BY_SUBSCRIPTION.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => [value.toLocaleString(), "Users"]} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
               </CardContent>
+              <CardFooter className="border-t p-4">
+                <Button variant="outline" className="w-full">View Subscription Analytics</Button>
+              </CardFooter>
             </Card>
+            
             <Card>
               <CardHeader>
-                <CardTitle>Engagement Stats</CardTitle>
-                <CardDescription>Key engagement metrics</CardDescription>
+                <CardTitle>Age Distribution</CardTitle>
+                <CardDescription>
+                  Users by age group
+                </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-muted p-4 rounded-lg">
-                      <div className="text-2xl font-bold">4.2</div>
-                      <div className="text-xs text-muted-foreground">Average sessions per week</div>
-                    </div>
-                    <div className="bg-muted p-4 rounded-lg">
-                      <div className="text-2xl font-bold">18.5</div>
-                      <div className="text-xs text-muted-foreground">Average tests per month</div>
-                    </div>
-                    <div className="bg-muted p-4 rounded-lg">
-                      <div className="text-2xl font-bold">72%</div>
-                      <div className="text-xs text-muted-foreground">Completion rate</div>
-                    </div>
-                    <div className="bg-muted p-4 rounded-lg">
-                      <div className="text-2xl font-bold">3.8</div>
-                      <div className="text-xs text-muted-foreground">App rating (out of 5)</div>
-                    </div>
-                  </div>
-                  
-                  <div className="pt-4">
-                    <h3 className="text-sm font-medium mb-2">Engagement Trend</h3>
-                    <div className="text-xs text-muted-foreground">
-                      <p className="mb-1">↑ 12% increase in daily active users</p>
-                      <p className="mb-1">↑ 8% increase in test completion rate</p>
-                      <p>↓ 3% decrease in session abandonment</p>
-                    </div>
-                  </div>
+              <CardContent className="px-2">
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={[
+                        { age: "18-24", count: 3200 },
+                        { age: "25-34", count: 4800 },
+                        { age: "35-44", count: 2900 },
+                        { age: "45-54", count: 1500 },
+                        { age: "55+", count: 440 }
+                      ]}
+                      margin={{ top: 10, right: 30, left: 0, bottom: 5 }}
+                    >
+                      <XAxis dataKey="age" />
+                      <YAxis />
+                      <Tooltip formatter={(value) => [`${value.toLocaleString()} users`, "Count"]} />
+                      <Bar dataKey="count" name="Users" fill="#3498db" />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
               </CardContent>
+              <CardFooter className="border-t p-4">
+                <Button variant="outline" className="w-full">View Demographic Details</Button>
+              </CardFooter>
             </Card>
           </div>
+        </TabsContent>
+        
+        <TabsContent value="performance" className="p-0 pt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Top Performing Users</CardTitle>
+              <CardDescription>
+                Users with the highest test scores and activity
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User</TableHead>
+                    <TableHead>Tests Completed</TableHead>
+                    <TableHead>Avg. Score</TableHead>
+                    <TableHead>Study Hours</TableHead>
+                    <TableHead>Subscription</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {TOP_PERFORMING_USERS.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={user.user.avatarUrl} />
+                            <AvatarFallback>{user.user.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{user.user.name}</p>
+                            <p className="text-sm text-muted-foreground">{user.user.email}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{user.testsCompleted}</TableCell>
+                      <TableCell>{user.avgScore}%</TableCell>
+                      <TableCell>{user.studyHours}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="bg-blue-100 text-blue-800">
+                          {user.subscription}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+            <CardFooter className="border-t p-4">
+              <Button variant="outline" className="w-full">View All Performance Data</Button>
+            </CardFooter>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

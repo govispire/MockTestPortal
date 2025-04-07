@@ -1,620 +1,836 @@
-import { useState } from 'react';
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell } from "recharts";
 import { 
-  Bar, 
-  BarChart, 
-  Line, 
-  LineChart, 
-  ResponsiveContainer, 
-  Tooltip, 
-  XAxis, 
-  YAxis,
-  CartesianGrid,
-  Legend,
-  Area,
-  AreaChart,
-  ComposedChart,
-  Cell,
-  Pie,
-  PieChart
-} from 'recharts';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { 
-  TrendingUp, 
-  ArrowUpRight, 
-  ArrowDownRight,
-  Tag,
+  TrendingUp,
+  ArrowUpRight,
   ShoppingCart,
-  MapPin,
   Users,
-  Clock,
-  BarChart as BarChartIcon
+  Package,
+  Calendar,
+  Star,
+  CreditCard,
+  CircleDollarSign,
+  IndianRupee,
+  PieChart as PieChartIcon
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 
-// Mock data for demonstration
-const salesTrend = [
-  { month: 'Jan', sales: 267, target: 250 },
-  { month: 'Feb', sales: 294, target: 300 },
-  { month: 'Mar', sales: 316, target: 350 },
-  { month: 'Apr', sales: 378, target: 400 },
-  { month: 'May', sales: 412, target: 450 },
-  { month: 'Jun', sales: 458, target: 500 }
-];
-
-const salesByState = [
-  { state: 'Delhi', sales: 124 },
-  { state: 'Maharashtra', sales: 108 },
-  { state: 'Karnataka', sales: 96 },
-  { state: 'Tamil Nadu', sales: 82 },
-  { state: 'Uttar Pradesh', sales: 76 },
-  { state: 'West Bengal', sales: 68 },
-  { state: 'Others', sales: 186 }
-];
-
-const salesByAge = [
-  { age: '18-24', value: 18 },
-  { age: '25-34', value: 42 },
-  { age: '35-44', value: 28 },
-  { age: '45-54', value: 9 },
-  { age: '55+', value: 3 }
-];
-
-const AGE_COLORS = ['#8884d8', '#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
-const conversionData = [
-  { stage: 'Visits', users: 24862 },
-  { stage: 'Sign-ups', users: 8943 },
-  { stage: 'Product Views', users: 6724 },
-  { stage: 'Cart Additions', users: 2453 },
-  { stage: 'Purchases', users: 678 }
-];
-
-const topProducts = [
-  { id: 1, product: 'UPSC Complete Study Material', sales: 128, revenue: 1024000, growth: '+18%' },
-  { id: 2, product: 'Banking Exam Preparation Kit', sales: 96, revenue: 672000, growth: '+12%' },
-  { id: 3, product: 'SSC Mock Test Series', sales: 82, revenue: 328000, growth: '+15%' },
-  { id: 4, product: 'Railway Exam Preparation Guide', sales: 76, revenue: 304000, growth: '+9%' },
-  { id: 5, product: 'Current Affairs - Yearly Subscription', sales: 68, revenue: 272000, growth: '+11%' }
-];
-
-const salesBySource = [
-  { month: 'Jan', Direct: 124, Organic: 85, Referral: 34, Social: 24 },
-  { month: 'Feb', Direct: 138, Organic: 94, Referral: 38, Social: 24 },
-  { month: 'Mar', Direct: 146, Organic: 105, Referral: 41, Social: 24 },
-  { month: 'Apr', Direct: 172, Organic: 123, Referral: 52, Social: 31 },
-  { month: 'May', Direct: 186, Organic: 134, Referral: 58, Social: 34 },
-  { month: 'Jun', Direct: 204, Organic: 152, Referral: 64, Social: 38 }
-];
-
-// Format currency for Indian Rupees
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
-};
-
-const calculateConversionRate = (startIndex: number, endIndex: number) => {
-  if (endIndex >= conversionData.length || startIndex < 0) {
-    return 0;
+// Temporary mock data
+const SALES_OVERVIEW = [
+  {
+    name: "Total Sales",
+    value: 9845,
+    icon: ShoppingCart,
+    change: 12,
+    trend: "up",
+    period: "month"
+  },
+  {
+    name: "New Customers",
+    value: 2150,
+    icon: Users,
+    change: 8.5,
+    trend: "up",
+    period: "month"
+  },
+  {
+    name: "Products Sold",
+    value: 12580,
+    icon: Package,
+    change: 15.2,
+    trend: "up",
+    period: "month"
+  },
+  {
+    name: "Conversion Rate",
+    value: 8.7,
+    icon: TrendingUp,
+    change: 2.1,
+    trend: "up",
+    period: "month"
   }
-  
-  const startValue = conversionData[startIndex].users;
-  const endValue = conversionData[endIndex].users;
-  
-  return ((endValue / startValue) * 100).toFixed(1);
-};
+];
 
-const SalesPanel = () => {
-  const [timeRange, setTimeRange] = useState('monthly');
+const MONTHLY_SALES = [
+  { month: "Jan", sales: 5620 },
+  { month: "Feb", sales: 6250 },
+  { month: "Mar", sales: 7150 },
+  { month: "Apr", sales: 7820 },
+  { month: "May", sales: 8350 },
+  { month: "Jun", sales: 8950 },
+  { month: "Jul", sales: 9250 },
+  { month: "Aug", sales: 9650 },
+  { month: "Sep", sales: 9845 }
+];
+
+const CATEGORY_SALES = [
+  { name: "UPSC", value: 4250, color: "#3498db" },
+  { name: "Banking", value: 3150, color: "#2ecc71" },
+  { name: "SSC", value: 1850, color: "#9b59b6" },
+  { name: "Railway", value: 845, color: "#f39c12" },
+  { name: "Others", value: 750, color: "#e74c3c" }
+];
+
+const TOP_SELLING_PRODUCTS = [
+  {
+    id: 1,
+    name: "UPSC Complete Package",
+    category: "UPSC",
+    price: 12500,
+    sales: 114,
+    revenue: 1425000,
+    rating: 4.8
+  },
+  {
+    id: 2,
+    name: "Banking Exams Bundle",
+    category: "Banking",
+    price: 7500,
+    sales: 112,
+    revenue: 840000,
+    rating: 4.7
+  },
+  {
+    id: 3,
+    name: "SSC Advanced Course",
+    category: "SSC",
+    price: 5500,
+    sales: 70,
+    revenue: 385000,
+    rating: 4.6
+  },
+  {
+    id: 4,
+    name: "Railway Exam Prep",
+    category: "Railway",
+    price: 4500,
+    sales: 28,
+    revenue: 126000,
+    rating: 4.5
+  },
+  {
+    id: 5,
+    name: "Current Affairs Yearly",
+    category: "General",
+    price: 1200,
+    sales: 48,
+    revenue: 57600,
+    rating: 4.4
+  }
+];
+
+const CUSTOMER_ACQUISITION = [
+  { month: "Jan", organic: 650, paid: 450, referral: 120 },
+  { month: "Feb", organic: 720, paid: 480, referral: 150 },
+  { month: "Mar", organic: 780, paid: 520, referral: 180 },
+  { month: "Apr", organic: 840, paid: 550, referral: 210 },
+  { month: "May", organic: 920, paid: 580, referral: 240 },
+  { month: "Jun", organic: 980, paid: 620, referral: 280 },
+  { month: "Jul", organic: 1050, paid: 650, referral: 320 },
+  { month: "Aug", organic: 1120, paid: 680, referral: 350 },
+  { month: "Sep", organic: 1180, paid: 710, referral: 390 }
+];
+
+const SALES_BY_PRICE_RANGE = [
+  { name: "₹0-₹2,000", value: 2150, color: "#3498db" },
+  { name: "₹2,001-₹5,000", value: 3250, color: "#2ecc71" },
+  { name: "₹5,001-₹10,000", value: 2850, color: "#9b59b6" },
+  { name: "₹10,001+", value: 1595, color: "#e74c3c" }
+];
+
+const CUSTOMER_DEMOGRAPHICS = [
+  {
+    id: 1,
+    ageGroup: "18-24",
+    percentage: 35,
+    count: 3450,
+    avgPurchase: 4500
+  },
+  {
+    id: 2,
+    ageGroup: "25-34",
+    percentage: 45,
+    count: 4425,
+    avgPurchase: 7500
+  },
+  {
+    id: 3,
+    ageGroup: "35-44",
+    percentage: 15,
+    count: 1475,
+    avgPurchase: 6800
+  },
+  {
+    id: 4,
+    ageGroup: "45-54",
+    percentage: 4,
+    count: 390,
+    avgPurchase: 5200
+  },
+  {
+    id: 5,
+    ageGroup: "55+",
+    percentage: 1,
+    count: 105,
+    avgPurchase: 3500
+  }
+];
+
+const SALES_FORECASTS = [
+  { month: "Oct", forecasted: 10200, lower: 9800, upper: 10600 },
+  { month: "Nov", forecasted: 10800, lower: 10300, upper: 11300 },
+  { month: "Dec", forecasted: 11500, lower: 10900, upper: 12100 },
+  { month: "Jan", forecasted: 10500, lower: 9900, upper: 11100 },
+  { month: "Feb", forecasted: 11000, lower: 10400, upper: 11600 },
+  { month: "Mar", forecasted: 12500, lower: 11700, upper: 13300 }
+];
+
+export default function SalesPanel() {
+  const [timePeriod, setTimePeriod] = useState("month");
+  const [currentTab, setCurrentTab] = useState("overview");
+  
+  const { data: salesData, isLoading } = useQuery({
+    queryKey: ["/api/sales"],
+    // Disabled until API is available
+    enabled: false
+  });
+
+  const formatCurrency = (amount: number) => {
+    return `₹${amount.toLocaleString()}`;
+  };
   
   return (
-    <div className="space-y-6">
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        {/* Total Sales */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
-            <Tag className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">458</div>
-            <div className="flex items-center text-xs text-green-500 font-medium mt-1">
-              <ArrowUpRight className="mr-1 h-3 w-3" />
-              <span>+11.2% from last month</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Average Order */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Order Value</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(8400)}</div>
-            <div className="flex items-center text-xs text-green-500 font-medium mt-1">
-              <ArrowUpRight className="mr-1 h-3 w-3" />
-              <span>+4.3% from last month</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Conversion Rate */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">7.6%</div>
-            <div className="flex items-center text-xs text-green-500 font-medium mt-1">
-              <ArrowUpRight className="mr-1 h-3 w-3" />
-              <span>+0.8% from last month</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* New Customers */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">New Customers</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">286</div>
-            <div className="flex items-center text-xs text-green-500 font-medium mt-1">
-              <ArrowUpRight className="mr-1 h-3 w-3" />
-              <span>+18.2% from last month</span>
-            </div>
-          </CardContent>
-        </Card>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-semibold">Sales Performance</h2>
+        <Select value={timePeriod} onValueChange={setTimePeriod}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select period" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="week">This Week</SelectItem>
+            <SelectItem value="month">This Month</SelectItem>
+            <SelectItem value="quarter">This Quarter</SelectItem>
+            <SelectItem value="year">This Year</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* Time Range Selection */}
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Sales Performance</h3>
-        <div>
-          <Select 
-            defaultValue={timeRange} 
-            onValueChange={(value) => setTimeRange(value)}
-          >
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Select time range" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="weekly">Last 7 Days</SelectItem>
-              <SelectItem value="monthly">Last 30 Days</SelectItem>
-              <SelectItem value="quarterly">Last 90 Days</SelectItem>
-              <SelectItem value="yearly">Last 12 Months</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Sales Trend */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Sales Trend</CardTitle>
-            <CardDescription>Actual vs Target comparison</CardDescription>
-          </CardHeader>
-          <CardContent className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart
-                data={salesTrend}
-                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip 
-                  contentStyle={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }}
-                />
-                <Legend />
-                <Bar 
-                  dataKey="sales" 
-                  name="Actual Sales" 
-                  fill="#3b82f6" 
-                  radius={[4, 4, 0, 0]}
-                  barSize={30}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="target"
-                  name="Target"
-                  stroke="#ef4444"
-                  strokeWidth={2}
-                  dot={{ r: 4 }}
-                  activeDot={{ r: 6 }}
-                />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Sales by Geographic Region */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Sales by Region</CardTitle>
-            <CardDescription>Distribution across states</CardDescription>
-          </CardHeader>
-          <CardContent className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={salesByState}
-                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                barSize={30}
-                layout="vertical"
-              >
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" />
-                <YAxis type="category" dataKey="state" width={100} />
-                <Tooltip 
-                  contentStyle={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }}
-                  formatter={(value: number) => [`${value} sales`, 'Count']}
-                />
-                <Bar 
-                  dataKey="sales" 
-                  name="Sales" 
-                  fill="#10b981" 
-                  radius={[0, 4, 4, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Second Row of Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Age Demographics */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Customer Age Demographics</CardTitle>
-            <CardDescription>Sales distribution by age group</CardDescription>
-          </CardHeader>
-          <CardContent className="h-80">
-            <div className="flex h-full items-center justify-center">
-              <div className="w-full max-w-md h-full flex flex-col md:flex-row items-center justify-between">
-                <div className="h-64 w-full max-w-64">
+      <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="products">Products</TabsTrigger>
+          <TabsTrigger value="customers">Customers</TabsTrigger>
+          <TabsTrigger value="forecasts">Forecasts</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="overview" className="p-0 pt-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {SALES_OVERVIEW.map((item) => (
+              <Card key={item.name}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    {item.name}
+                  </CardTitle>
+                  <item.icon className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {item.name === "Conversion Rate" 
+                      ? `${item.value}%`
+                      : item.value.toLocaleString()}
+                  </div>
+                  <div className="flex items-center pt-1">
+                    <ArrowUpRight className="mr-1 h-4 w-4 text-green-500" />
+                    <p className="text-xs text-green-500">
+                      {item.change}% from previous {item.period}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <Card className="col-span-1">
+              <CardHeader>
+                <CardTitle>Monthly Sales Trend</CardTitle>
+                <CardDescription>
+                  Number of sales for the current year
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-2">
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart
+                      data={MONTHLY_SALES}
+                      margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip formatter={(value) => [`${value} sales`, ""]} />
+                      <Area 
+                        type="monotone" 
+                        dataKey="sales" 
+                        stroke="#8884d8" 
+                        fill="url(#colorSales)" 
+                        name="Sales"
+                      />
+                      <defs>
+                        <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="#8884d8" stopOpacity={0.1}/>
+                        </linearGradient>
+                      </defs>
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="col-span-1">
+              <CardHeader>
+                <CardTitle>Sales by Category</CardTitle>
+                <CardDescription>
+                  Distribution of sales by product category
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-2">
+                <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={salesByAge}
+                        data={CATEGORY_SALES}
                         cx="50%"
                         cy="50%"
                         innerRadius={60}
-                        outerRadius={80}
+                        outerRadius={100}
                         paddingAngle={5}
                         dataKey="value"
-                        nameKey="age"
+                        label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
                       >
-                        {salesByAge.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={AGE_COLORS[index % AGE_COLORS.length]} />
+                        {CATEGORY_SALES.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip 
-                        contentStyle={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }}
-                        formatter={(value: number) => [`${value}%`, 'Percentage']}
-                      />
+                      <Tooltip formatter={(value) => [`${value} sales`, ""]} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
-
-                <div className="space-y-4 mt-6 md:mt-0">
-                  {salesByAge.map((entry, index) => (
-                    <div key={entry.age} className="flex items-center">
-                      <div 
-                        className="w-3 h-3 rounded-full mr-2" 
-                        style={{ backgroundColor: AGE_COLORS[index % AGE_COLORS.length] }}
-                      ></div>
-                      <div className="flex items-center justify-between w-full min-w-[150px]">
-                        <span className="text-sm font-medium">{entry.age}</span>
-                        <span className="text-sm text-gray-500">{entry.value}%</span>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <div className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Customer Acquisition</CardTitle>
+                <CardDescription>
+                  New customers by acquisition channel
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-2">
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={CUSTOMER_ACQUISITION}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="organic" name="Organic" stackId="a" fill="#3498db" />
+                      <Bar dataKey="paid" name="Paid" stackId="a" fill="#2ecc71" />
+                      <Bar dataKey="referral" name="Referral" stackId="a" fill="#9b59b6" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="products" className="p-0 pt-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Top Selling Products</CardTitle>
+                <CardDescription>
+                  Best performing products by sales volume
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Product</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Price</TableHead>
+                      <TableHead>Sales</TableHead>
+                      <TableHead>Revenue</TableHead>
+                      <TableHead>Rating</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {TOP_SELLING_PRODUCTS.map((product) => (
+                      <TableRow key={product.id}>
+                        <TableCell className="font-medium">{product.name}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="bg-blue-100 text-blue-800">
+                            {product.category}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center">
+                            <IndianRupee className="h-3 w-3 mr-1 text-muted-foreground" />
+                            {product.price.toLocaleString()}
+                          </div>
+                        </TableCell>
+                        <TableCell>{product.sales}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            <IndianRupee className="h-3 w-3 mr-1 text-muted-foreground" />
+                            {product.revenue.toLocaleString()}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            <Star className="h-3 w-3 mr-1 fill-yellow-400 text-yellow-400" />
+                            {product.rating}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+              <CardFooter className="border-t p-4">
+                <Button variant="outline" className="w-full">View All Products</Button>
+              </CardFooter>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Sales by Price Range</CardTitle>
+                <CardDescription>
+                  Distribution of sales by product price range
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-2">
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={SALES_BY_PRICE_RANGE}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        innerRadius={60}
+                        paddingAngle={5}
+                        dataKey="value"
+                        label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {SALES_BY_PRICE_RANGE.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => [`${value} sales`, ""]} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+              <CardFooter className="border-t p-4">
+                <Button variant="outline" className="w-full">Price Analysis Report</Button>
+              </CardFooter>
+            </Card>
+          </div>
+          
+          <div className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Product Categories</CardTitle>
+                <CardDescription>
+                  Performance metrics by product category
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {CATEGORY_SALES.map((category) => (
+                    <div key={category.name} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center">
+                          <div 
+                            className="w-3 h-3 rounded-full mr-2" 
+                            style={{ backgroundColor: category.color }}
+                          ></div>
+                          <span className="font-medium">{category.name}</span>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                          <span className="text-sm">{category.value} sales</span>
+                          <span className="text-sm text-muted-foreground">
+                            {(category.value / SALES_OVERVIEW[0].value * 100).toFixed(1)}%
+                          </span>
+                        </div>
                       </div>
+                      <Progress 
+                        value={(category.value / SALES_OVERVIEW[0].value * 100)} 
+                        className="h-2"
+                        style={{ backgroundColor: `${category.color}20` }}
+                        indicatorClassName="h-full" 
+                        style={{ backgroundColor: category.color }}
+                      />
                     </div>
                   ))}
                 </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Sales by Source */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Sales by Source</CardTitle>
-            <CardDescription>Distribution by acquisition channel</CardDescription>
-          </CardHeader>
-          <CardContent className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart
-                data={salesBySource}
-                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                stackOffset="expand"
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis tickFormatter={(value) => `${(value * 100).toFixed(0)}%`} />
-                <Tooltip 
-                  contentStyle={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }}
-                  formatter={(value: number, name: string, props: any) => {
-                    // Calculate percentage
-                    const sum = Object.keys(props.payload)
-                      .filter(key => ['Direct', 'Organic', 'Referral', 'Social'].includes(key))
-                      .reduce((sum, key) => sum + props.payload[key], 0);
-                    
-                    const percent = ((value / sum) * 100).toFixed(1);
-                    return [`${value} (${percent}%)`, name];
-                  }}
-                />
-                <Legend />
-                <Area 
-                  type="monotone" 
-                  dataKey="Direct" 
-                  stackId="1" 
-                  stroke="#8884d8" 
-                  fill="#8884d8" 
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="Organic" 
-                  stackId="1" 
-                  stroke="#82ca9d" 
-                  fill="#82ca9d" 
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="Referral" 
-                  stackId="1" 
-                  stroke="#ffc658" 
-                  fill="#ffc658" 
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="Social" 
-                  stackId="1" 
-                  stroke="#ff8042" 
-                  fill="#ff8042" 
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Conversion Funnel */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Conversion Funnel</CardTitle>
-          <CardDescription>User flow from visits to purchases</CardDescription>
-        </CardHeader>
-        <CardContent className="h-96">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 h-full">
-            {conversionData.map((stage, index) => (
-              <div key={stage.stage} className="flex flex-col">
-                <div className="flex-grow flex items-end">
-                  <div className="w-full">
-                    <div className="relative pb-4">
-                      <div 
-                        className="absolute inset-0 flex items-center justify-center z-10 text-lg font-bold text-white"
-                        style={{ 
-                          top: '50%', 
-                          transform: 'translateY(-35%)'
-                        }}
-                      >
-                        {((stage.users / conversionData[0].users) * 100).toFixed(1)}%
+              </CardContent>
+              <CardFooter className="border-t p-4">
+                <Button variant="outline" className="w-full">Create New Category</Button>
+              </CardFooter>
+            </Card>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="customers" className="p-0 pt-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Customer Demographics</CardTitle>
+                <CardDescription>
+                  Customer breakdown by age group
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Age Group</TableHead>
+                      <TableHead>Percentage</TableHead>
+                      <TableHead>Count</TableHead>
+                      <TableHead>Avg. Purchase</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {CUSTOMER_DEMOGRAPHICS.map((group) => (
+                      <TableRow key={group.id}>
+                        <TableCell className="font-medium">{group.ageGroup}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            <span className="mr-2">{group.percentage}%</span>
+                            <div className="h-2 w-16 bg-gray-200 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-primary"
+                                style={{ width: `${group.percentage}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{group.count.toLocaleString()}</TableCell>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center">
+                            <IndianRupee className="h-3 w-3 mr-1 text-muted-foreground" />
+                            {group.avgPurchase.toLocaleString()}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+              <CardFooter className="border-t p-4">
+                <Button variant="outline" className="w-full">Customer Insights Report</Button>
+              </CardFooter>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>New vs Returning Customers</CardTitle>
+                <CardDescription>
+                  Monthly breakdown of customer types
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-2">
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={[
+                        { month: "Jan", new: 650, returning: 420 },
+                        { month: "Feb", new: 720, returning: 480 },
+                        { month: "Mar", new: 780, returning: 520 },
+                        { month: "Apr", new: 840, returning: 580 },
+                        { month: "May", new: 920, returning: 650 },
+                        { month: "Jun", new: 980, returning: 720 },
+                        { month: "Jul", new: 1050, returning: 790 },
+                        { month: "Aug", new: 1120, returning: 840 },
+                        { month: "Sep", new: 1180, returning: 890 }
+                      ]}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="new" name="New Customers" fill="#3498db" />
+                      <Bar dataKey="returning" name="Returning Customers" fill="#2ecc71" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+              <CardFooter className="border-t p-4">
+                <Button variant="outline" className="w-full">View Customer Retention Report</Button>
+              </CardFooter>
+            </Card>
+          </div>
+          
+          <div className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Customer Lifetime Value</CardTitle>
+                <CardDescription>
+                  Average revenue per customer over their lifetime
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-2">
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={[
+                        { month: 1, value: 4500 },
+                        { month: 3, value: 9800 },
+                        { month: 6, value: 14500 },
+                        { month: 12, value: 22800 },
+                        { month: 18, value: 28500 },
+                        { month: 24, value: 34200 }
+                      ]}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="month" 
+                        label={{ value: 'Months', position: 'insideBottomRight', offset: -10 }} 
+                      />
+                      <YAxis 
+                        label={{ value: 'LTV (₹)', angle: -90, position: 'insideLeft' }}
+                        tickFormatter={(value) => `₹${value}`}
+                      />
+                      <Tooltip formatter={(value) => [formatCurrency(value as number), "Lifetime Value"]} />
+                      <Line
+                        type="monotone"
+                        dataKey="value"
+                        name="LTV"
+                        stroke="#8884d8"
+                        activeDot={{ r: 8 }}
+                        strokeWidth={2}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+              <CardFooter className="border-t p-4 flex justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Average LTV</p>
+                  <p className="text-xl font-bold">₹34,200</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Acquisition Cost</p>
+                  <p className="text-xl font-bold">₹2,800</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">LTV:CAC Ratio</p>
+                  <p className="text-xl font-bold">12.2:1</p>
+                </div>
+              </CardFooter>
+            </Card>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="forecasts" className="p-0 pt-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="md:col-span-2">
+              <CardHeader>
+                <CardTitle>Sales Forecast (Next 6 Months)</CardTitle>
+                <CardDescription>
+                  Projected sales with confidence intervals
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-2">
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={SALES_FORECASTS}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="forecasted"
+                        name="Forecasted Sales"
+                        stroke="#8884d8"
+                        strokeWidth={2}
+                        dot={{ r: 5 }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="upper"
+                        name="Upper Bound"
+                        stroke="#82ca9d"
+                        strokeDasharray="5 5"
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="lower"
+                        name="Lower Bound"
+                        stroke="#ff7300"
+                        strokeDasharray="5 5"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+              <CardFooter className="border-t p-4">
+                <div className="grid grid-cols-3 w-full gap-4">
+                  <div className="border rounded-md p-4 text-center">
+                    <p className="text-sm text-muted-foreground mb-1">Total Forecasted Sales</p>
+                    <p className="text-2xl font-bold">66,500</p>
+                  </div>
+                  <div className="border rounded-md p-4 text-center">
+                    <p className="text-sm text-muted-foreground mb-1">Projected Revenue</p>
+                    <p className="text-2xl font-bold">₹4.8 Cr</p>
+                  </div>
+                  <div className="border rounded-md p-4 text-center">
+                    <p className="text-sm text-muted-foreground mb-1">Growth Rate</p>
+                    <p className="text-2xl font-bold">18.2%</p>
+                  </div>
+                </div>
+              </CardFooter>
+            </Card>
+          </div>
+          
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Seasonal Trends</CardTitle>
+                <CardDescription>
+                  Analysis of seasonal patterns in sales data
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="font-medium">Q1 (Jan-Mar)</span>
+                      <span>19,020 sales</span>
+                    </div>
+                    <Progress value={75} className="h-2" />
+                    <p className="text-sm text-muted-foreground">High season for banking and SSC exams</p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="font-medium">Q2 (Apr-Jun)</span>
+                      <span>25,120 sales</span>
+                    </div>
+                    <Progress value={90} className="h-2" />
+                    <p className="text-sm text-muted-foreground">Peak season for UPSC preliminary exams</p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="font-medium">Q3 (Jul-Sep)</span>
+                      <span>28,745 sales</span>
+                    </div>
+                    <Progress value={100} className="h-2" />
+                    <p className="text-sm text-muted-foreground">Highest sales, multiple exam seasons</p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="font-medium">Q4 (Oct-Dec)</span>
+                      <span>21,450 sales</span>
+                    </div>
+                    <Progress value={80} className="h-2" />
+                    <p className="text-sm text-muted-foreground">Strong for railway exams and year-end offers</p>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="border-t p-4">
+                <Button variant="outline" className="w-full">View Seasonal Analysis Report</Button>
+              </CardFooter>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Growth Opportunities</CardTitle>
+                <CardDescription>
+                  Potential areas for sales growth
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="flex items-start space-x-4 p-4 border rounded-md">
+                    <PieChartIcon className="h-10 w-10 text-primary mt-1" />
+                    <div>
+                      <h4 className="font-medium">State PSC Exam Category</h4>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Market analysis shows high demand for state-level public service commission exams with minimal competition.
+                      </p>
+                      <div className="mt-2 flex items-center">
+                        <span className="text-sm font-medium">Potential Revenue: </span>
+                        <span className="text-sm ml-2">₹1.2 Cr/year</span>
                       </div>
-                      <div 
-                        className="bg-blue-500 w-full rounded-t-md transition-all duration-500"
-                        style={{ 
-                          height: `${(stage.users / conversionData[0].users) * 100}%`,
-                          minHeight: '40px' 
-                        }}
-                      ></div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-4 p-4 border rounded-md">
+                    <Package className="h-10 w-10 text-primary mt-1" />
+                    <div>
+                      <h4 className="font-medium">Test Series Bundles</h4>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Creating subject-focused test series bundles can boost average order value and provide more targeted study materials.
+                      </p>
+                      <div className="mt-2 flex items-center">
+                        <span className="text-sm font-medium">AOV Increase: </span>
+                        <span className="text-sm ml-2">35%</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-4 p-4 border rounded-md">
+                    <Users className="h-10 w-10 text-primary mt-1" />
+                    <div>
+                      <h4 className="font-medium">Group Subscriptions</h4>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Offering discounted group subscriptions for coaching institutes and study groups can open B2B sales channels.
+                      </p>
+                      <div className="mt-2 flex items-center">
+                        <span className="text-sm font-medium">Revenue Impact: </span>
+                        <span className="text-sm ml-2">+22%</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="text-center space-y-2">
-                  <h3 className="font-medium">{stage.stage}</h3>
-                  <p className="text-sm text-muted-foreground">{stage.users.toLocaleString()}</p>
-                  {index > 0 && (
-                    <span className="inline-flex items-center text-xs px-2 py-1 rounded-full bg-slate-100">
-                      {calculateConversionRate(index-1, index)}% from prev
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
+              </CardContent>
+              <CardFooter className="border-t p-4">
+                <Button variant="outline" className="w-full">Explore Growth Opportunities</Button>
+              </CardFooter>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Top Products */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <div>
-            <CardTitle>Top Products</CardTitle>
-            <CardDescription>Best selling items</CardDescription>
-          </div>
-          <div className="flex items-center text-sm text-muted-foreground">
-            <Clock className="mr-1 h-4 w-4" />
-            <span>Last 30 days</span>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Product Name</TableHead>
-                <TableHead className="text-right">Sales</TableHead>
-                <TableHead className="text-right">Revenue</TableHead>
-                <TableHead className="text-right">Growth</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {topProducts.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell className="font-medium">{product.product}</TableCell>
-                  <TableCell className="text-right">{product.sales}</TableCell>
-                  <TableCell className="text-right">{formatCurrency(product.revenue)}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end">
-                      <span className="text-green-500">{product.growth}</span>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      {/* Regional Insights */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Top States */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Top Performing States</CardTitle>
-            <CardDescription>States with highest sales conversion</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Delhi</span>
-                  <span className="text-sm">9.4% conversion</span>
-                </div>
-                <div className="h-2 bg-slate-100 rounded-full">
-                  <div className="h-2 bg-blue-500 rounded-full" style={{ width: '94%' }}></div>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Maharashtra</span>
-                  <span className="text-sm">8.9% conversion</span>
-                </div>
-                <div className="h-2 bg-slate-100 rounded-full">
-                  <div className="h-2 bg-blue-500 rounded-full" style={{ width: '89%' }}></div>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Karnataka</span>
-                  <span className="text-sm">8.6% conversion</span>
-                </div>
-                <div className="h-2 bg-slate-100 rounded-full">
-                  <div className="h-2 bg-blue-500 rounded-full" style={{ width: '86%' }}></div>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Tamil Nadu</span>
-                  <span className="text-sm">8.3% conversion</span>
-                </div>
-                <div className="h-2 bg-slate-100 rounded-full">
-                  <div className="h-2 bg-blue-500 rounded-full" style={{ width: '83%' }}></div>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Gujarat</span>
-                  <span className="text-sm">7.8% conversion</span>
-                </div>
-                <div className="h-2 bg-slate-100 rounded-full">
-                  <div className="h-2 bg-blue-500 rounded-full" style={{ width: '78%' }}></div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Regional Performance */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Regional Performance</CardTitle>
-            <CardDescription>Comparison across regions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <Card className="border-none shadow-none bg-slate-50">
-                <CardContent className="p-4 flex flex-col items-center justify-center h-full">
-                  <div className="mb-4 text-center">
-                    <h3 className="text-base font-medium">North India</h3>
-                    <div className="mt-2 text-2xl font-bold">187</div>
-                    <span className="text-xs text-muted-foreground">Total sales</span>
-                    <div className="flex items-center justify-center text-xs text-green-500 font-medium mt-2">
-                      <ArrowUpRight className="mr-1 h-3 w-3" />
-                      <span>+14.2%</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-none shadow-none bg-slate-50">
-                <CardContent className="p-4 flex flex-col items-center justify-center h-full">
-                  <div className="mb-4 text-center">
-                    <h3 className="text-base font-medium">South India</h3>
-                    <div className="mt-2 text-2xl font-bold">156</div>
-                    <span className="text-xs text-muted-foreground">Total sales</span>
-                    <div className="flex items-center justify-center text-xs text-green-500 font-medium mt-2">
-                      <ArrowUpRight className="mr-1 h-3 w-3" />
-                      <span>+16.8%</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-none shadow-none bg-slate-50">
-                <CardContent className="p-4 flex flex-col items-center justify-center h-full">
-                  <div className="mb-4 text-center">
-                    <h3 className="text-base font-medium">East India</h3>
-                    <div className="mt-2 text-2xl font-bold">92</div>
-                    <span className="text-xs text-muted-foreground">Total sales</span>
-                    <div className="flex items-center justify-center text-xs text-green-500 font-medium mt-2">
-                      <ArrowUpRight className="mr-1 h-3 w-3" />
-                      <span>+8.4%</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-none shadow-none bg-slate-50">
-                <CardContent className="p-4 flex flex-col items-center justify-center h-full">
-                  <div className="mb-4 text-center">
-                    <h3 className="text-base font-medium">West India</h3>
-                    <div className="mt-2 text-2xl font-bold">123</div>
-                    <span className="text-xs text-muted-foreground">Total sales</span>
-                    <div className="flex items-center justify-center text-xs text-green-500 font-medium mt-2">
-                      <ArrowUpRight className="mr-1 h-3 w-3" />
-                      <span>+12.6%</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
-};
-
-export default SalesPanel;
+}
