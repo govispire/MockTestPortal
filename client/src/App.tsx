@@ -7,6 +7,9 @@ import TestPage from "@/pages/test-page";
 import ResultsPage from "@/pages/results-page";
 import HomePage from "@/pages/home-page";
 import OwnerDashboard from "@/pages/owner-dashboard";
+import OwnerUserActivity from "@/pages/owner-user-activity";
+import OwnerRevenue from "@/pages/owner-revenue";
+import OwnerSales from "@/pages/owner-sales";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 
@@ -30,6 +33,9 @@ function Router() {
       <Route path="/auth" component={AuthPage} />
       <ProtectedRoute path="/dashboard" component={DashboardPage} />
       <ProtectedRoute path="/owner" component={OwnerDashboard} />
+      <ProtectedRoute path="/owner/user-activity" component={OwnerUserActivity} />
+      <ProtectedRoute path="/owner/revenue" component={OwnerRevenue} />
+      <ProtectedRoute path="/owner/sales" component={OwnerSales} />
       <ProtectedRoute path="/test/:id" component={TestPage} />
       <ProtectedRoute path="/results/:id" component={ResultsPage} />
       <Route component={NotFound} />

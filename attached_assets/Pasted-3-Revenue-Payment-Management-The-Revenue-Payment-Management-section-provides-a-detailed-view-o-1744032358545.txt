@@ -1,0 +1,43 @@
+3. Revenue & Payment Management
+
+The Revenue & Payment Management section provides a detailed view of the financial health of the platform, including income, user payments, and other financial metrics.
+
+    Total Earnings Breakdown:
+
+        Visualizes the earnings from courses, test series, and subscriptions, allowing the owner to track revenue across different sources.
+
+    Transaction History:
+
+        Displays a timeline or table of all transactions (payments, refunds, etc.), with options to filter by date range and transaction type (e.g., refund, payment).
+
+    Subscription Plan Management:
+
+        Allows the owner to manage subscription plans, including viewing active/inactive users and adjusting pricing tiers or benefits based on performance.
+
+    Payouts & Withdrawals:
+
+        Manages payouts to employees/teachers, showing a list of pending and completed payments. Filters are available to review status, amount, and user details.
+
+4. Sales & Performance Analysis
+
+This section helps the owner analyze platform performance by identifying high-performing products and overall platform trends.
+
+    Top Revenue-Generating Courses:
+
+        Displays the Top 5 courses by revenue, enabling the owner to see which courses are driving the most income.
+
+    Most Purchased Test Packages:
+
+        Lists the most popular test packages based on purchases, providing insights into what types of tests are attracting the most students.
+
+    Most Demanding Tests/Exams:
+
+        Highlights the tests or exams with the most user interest or enrollment, helping the owner to prioritize resources on high-demand offerings.
+
+    Popular Exam Categories:
+
+        Tracks the popularity of different exam categories (e.g., Science, Math) based on sign-ups vs. dropouts. This insight helps the owner identify areas for improvement or investment.
+
+    Daily Signups & Conversion Rates:
+
+        Tracks daily sign-ups and calculates the conversion rate (visitors who became paying users), which provides insights into the effectiveness of marketing and onboarding strategies.
