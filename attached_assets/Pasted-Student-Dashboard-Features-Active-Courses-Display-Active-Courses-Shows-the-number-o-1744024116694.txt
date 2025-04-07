@@ -1,0 +1,69 @@
+Student Dashboard Features:
+
+    Active Courses:
+
+        Display Active Courses: Shows the number of courses the student is currently enrolled in.
+
+        Course Management: Clicking here could lead to a list or grid of the active courses the student is participating in.
+
+    Study Hours:
+
+        Track Study Hours: Display the total number of hours the student has studied so far.
+
+        Progress Tracking: This can be updated as the student logs their study time.
+
+    Target Exams:
+
+        Track Target Exams: Shows the number of exams the student is preparing for.
+
+        Progress Bar: A visual representation of exam preparation progress, with the ability to track milestones.
+
+    Test Score:
+
+        Show Latest Test Score: Displays the student’s most recent test score or average score, allowing them to quickly assess their performance.
+
+    Flashcards:
+
+        Study Tool: Allows students to create and review flashcards for better retention.
+
+        Add Card Button: Option for students to add flashcards on specific topics they want to review.
+
+    Target Exam Tracker:
+
+        List of Target Exams: Shows a list of upcoming exams (e.g., Mathematics Final, Physics Midterm) along with:
+
+            Due Date.
+
+            Preparation Progress: A visual progress bar indicating how much the student has prepared for each exam.
+
+    Performance Trend:
+
+        Performance Over Time: A graph that tracks the student's test scores or performance across time (e.g., weekly/monthly). This helps the student visualize their progress and trends in performance.
+
+    Task Manager:
+
+        Upcoming Tasks: A to-do list where the student can track tasks or assignments, such as homework, projects, or practice tests.
+
+        Add Task Button: Allows students to add new tasks with due dates and priority levels (e.g., high, medium, low).
+
+    Sidebar Menu:
+
+        Navigation Links: Includes links to key sections like:
+
+            Dashboard (current view)
+
+            Courses
+
+            Tests
+
+            Calendar
+
+            Performance
+
+            PDF Courses
+
+            Current Affairs
+
+            Speed Drills
+
+        Settings & Logout: For account settings and to log out.

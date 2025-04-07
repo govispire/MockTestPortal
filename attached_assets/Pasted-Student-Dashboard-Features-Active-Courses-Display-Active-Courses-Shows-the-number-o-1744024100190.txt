@@ -1,0 +1,155 @@
+Student Dashboard Features:
+
+    Active Courses:
+
+        Display Active Courses: Shows the number of courses the student is currently enrolled in.
+
+        Course Management: Clicking here could lead to a list or grid of the active courses the student is participating in.
+
+    Study Hours:
+
+        Track Study Hours: Display the total number of hours the student has studied so far.
+
+        Progress Tracking: This can be updated as the student logs their study time.
+
+    Target Exams:
+
+        Track Target Exams: Shows the number of exams the student is preparing for.
+
+        Progress Bar: A visual representation of exam preparation progress, with the ability to track milestones.
+
+    Test Score:
+
+        Show Latest Test Score: Displays the student’s most recent test score or average score, allowing them to quickly assess their performance.
+
+    Flashcards:
+
+        Study Tool: Allows students to create and review flashcards for better retention.
+
+        Add Card Button: Option for students to add flashcards on specific topics they want to review.
+
+    Target Exam Tracker:
+
+        List of Target Exams: Shows a list of upcoming exams (e.g., Mathematics Final, Physics Midterm) along with:
+
+            Due Date.
+
+            Preparation Progress: A visual progress bar indicating how much the student has prepared for each exam.
+
+    Performance Trend:
+
+        Performance Over Time: A graph that tracks the student's test scores or performance across time (e.g., weekly/monthly). This helps the student visualize their progress and trends in performance.
+
+    Task Manager:
+
+        Upcoming Tasks: A to-do list where the student can track tasks or assignments, such as homework, projects, or practice tests.
+
+        Add Task Button: Allows students to add new tasks with due dates and priority levels (e.g., high, medium, low).
+
+    Sidebar Menu:
+
+        Navigation Links: Includes links to key sections like:
+
+            Dashboard (current view)
+
+            Courses
+
+            Tests
+
+            Calendar
+
+            Performance
+
+            PDF Courses
+
+            Current Affairs
+
+            Speed Drills
+
+        Settings & Logout: For account settings and to log out.
+
+Detailed Structure for the Student Dashboard:
+
+Here’s how the layout can be organized:
+Header Section:
+
+    Student Name & Profile: The student's name and profile picture, with options for settings and logout.
+
+Main Dashboard Sections (arranged in cards or panels):
+
+    Active Courses:
+
+        A section that shows the number of courses the student is enrolled in.
+
+        Quick links to individual courses for detailed views.
+
+    Study Hours:
+
+        Total study hours tracked, possibly with a graphical display or progress bar.
+
+    Target Exams:
+
+        A list of exams the student is preparing for, with progress indicators and due dates.
+
+    Test Score:
+
+        A snapshot of recent test scores (percentage or grade).
+
+    Flashcards:
+
+        Display a flashcard with a question or term and the option to flip for the answer.
+
+        A button to add new flashcards related to specific courses or topics.
+
+    Performance Trend:
+
+        A graph showing the student's performance over time. This could show test scores, average grades, or other performance metrics.
+
+    Task Manager:
+
+        A checklist of upcoming assignments, tasks, or exam preparations.
+
+        Students can check off completed tasks and add new ones with due dates and priorities.
+
+Implementation Considerations:
+
+    Responsiveness: Make sure the layout is responsive, so it works well on both mobile and desktop devices.
+
+    Dynamic Content: Use React or Next.js (if building a React-based project) to dynamically update the student's progress, test scores, and other real-time data.
+
+    Interactive Elements: Flashcards, progress bars, and task checkboxes should be interactive and update in real time as the student interacts with the dashboard.
+
+AI Instructions for Implementation:
+
+Here’s how you can instruct the AI to implement this Student Dashboard:
+
+    Instruction for Layout:
+
+"Create a Student Dashboard with the following sections:
+- **Active Courses**: Display the number of active courses the student is enrolled in.
+- **Study Hours**: Display the total study hours tracked for the student.
+- **Target Exams**: Show a count of target exams and a progress bar for each exam.
+- **Test Score**: Display the student’s most recent test score.
+- **Flashcards**: Include a flashcard component with the ability to add new cards.
+- **Target Exam Tracker**: Show a list of upcoming exams with preparation progress.
+- **Performance Trend**: Display a graph showing the student’s performance over time.
+- **Task Manager**: Include a to-do list for upcoming tasks, assignments, and tests.
+
+Instruction for Sidebar Navigation:
+
+"Create a sidebar menu with the following options:
+- Dashboard (current page)
+- Courses
+- Tests
+- Calendar
+- Performance
+- PDF Courses
+- Current Affairs
+- Speed Drills
+Include a settings option and logout button at the bottom of the sidebar."
+
+Instruction for Components:
+
+"Create components for each section: 
+- **ActiveCourses.tsx**, **StudyHours.tsx**, **TargetExams.tsx**, **TestScore.tsx**, **Flashcards.tsx**, **PerformanceTrend.tsx**, and **TaskManager.tsx**. 
+These components should be imported and used in the main **StudentDashboard.tsx** file to 

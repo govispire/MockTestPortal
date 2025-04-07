@@ -2,7 +2,12 @@ import { ReactNode, useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { Menu, X, User, ChevronDown } from "lucide-react";
+import { 
+  Menu, X, ChevronDown, 
+  BookOpen, Library, BookMarked, 
+  Calendar, LineChart, FileText, 
+  Activity, Settings, LogOut, Zap, Info 
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,6 +41,22 @@ export default function NavigationLayout({ children }: NavigationLayoutProps) {
     return user.username.slice(0, 2).toUpperCase();
   };
   
+  const menuItems = [
+    { name: "Dashboard", path: "/", icon: <BookOpen className="h-4 w-4" /> },
+    { name: "Courses", path: "/courses", icon: <Library className="h-4 w-4" /> },
+    { name: "Tests", path: "/tests", icon: <BookMarked className="h-4 w-4" /> },
+    { name: "Calendar", path: "/calendar", icon: <Calendar className="h-4 w-4" /> },
+    { name: "Performance", path: "/performance", icon: <LineChart className="h-4 w-4" /> },
+    { name: "PDF Courses", path: "/pdf-courses", icon: <FileText className="h-4 w-4" /> },
+    { name: "Current Affairs", path: "/current-affairs", icon: <Activity className="h-4 w-4" /> },
+    { name: "Speed Drills", path: "/speed-drills", icon: <Zap className="h-4 w-4" /> },
+  ];
+  
+  const accountItems = [
+    { name: "Settings", path: "/settings", icon: <Settings className="h-4 w-4" /> },
+    { name: "Help", path: "/help", icon: <Info className="h-4 w-4" /> },
+  ];
+  
   return (
     <div>
       <header className="bg-white shadow-md">
@@ -52,18 +73,17 @@ export default function NavigationLayout({ children }: NavigationLayoutProps) {
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-4">
-              <Button 
-                variant={location === "/" ? "default" : "ghost"} 
-                onClick={() => navigate("/")}
-              >
-                Dashboard
-              </Button>
-              <Button 
-                variant="ghost" 
-                onClick={() => navigate("/analytics")}
-              >
-                Analytics
-              </Button>
+              {menuItems.slice(0, 3).map(item => (
+                <Button 
+                  key={item.path}
+                  variant={location === item.path ? "default" : "ghost"} 
+                  onClick={() => navigate(item.path)}
+                  className="gap-2"
+                >
+                  {item.icon}
+                  <span>{item.name}</span>
+                </Button>
+              ))}
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -83,12 +103,20 @@ export default function NavigationLayout({ children }: NavigationLayoutProps) {
                   <DropdownMenuItem onClick={() => navigate("/profile")}>
                     Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/settings")}>
-                    Settings
-                  </DropdownMenuItem>
+                  {accountItems.map(item => (
+                    <DropdownMenuItem key={item.path} onClick={() => navigate(item.path)}>
+                      <div className="flex items-center gap-2">
+                        {item.icon}
+                        <span>{item.name}</span>
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
-                    Log out
+                    <div className="flex items-center gap-2 text-red-500">
+                      <LogOut className="h-4 w-4" />
+                      <span>Log out</span>
+                    </div>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -113,26 +141,20 @@ export default function NavigationLayout({ children }: NavigationLayoutProps) {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="pt-2 pb-3 space-y-1 px-2">
-              <Button 
-                variant={location === "/" ? "default" : "ghost"}
-                className="w-full justify-start" 
-                onClick={() => {
-                  navigate("/");
-                  setIsMenuOpen(false);
-                }}
-              >
-                Dashboard
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start"
-                onClick={() => {
-                  navigate("/analytics");
-                  setIsMenuOpen(false);
-                }}
-              >
-                Analytics
-              </Button>
+              {menuItems.map(item => (
+                <Button 
+                  key={item.path}
+                  variant={location === item.path ? "default" : "ghost"}
+                  className="w-full justify-start gap-2" 
+                  onClick={() => {
+                    navigate(item.path);
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  {item.icon}
+                  <span>{item.name}</span>
+                </Button>
+              ))}
             </div>
             <div className="pt-4 pb-3 border-t border-gray-200">
               <div className="flex items-center px-4">
@@ -149,23 +171,39 @@ export default function NavigationLayout({ children }: NavigationLayoutProps) {
               <div className="mt-3 space-y-1 px-2">
                 <Button 
                   variant="ghost" 
-                  className="w-full justify-start"
+                  className="w-full justify-start gap-2"
                   onClick={() => {
                     navigate("/profile");
                     setIsMenuOpen(false);
                   }}
                 >
-                  Your Profile
+                  <Settings className="h-4 w-4" />
+                  <span>Your Profile</span>
                 </Button>
+                {accountItems.map(item => (
+                  <Button 
+                    key={item.path}
+                    variant="ghost" 
+                    className="w-full justify-start gap-2"
+                    onClick={() => {
+                      navigate(item.path);
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    {item.icon}
+                    <span>{item.name}</span>
+                  </Button>
+                ))}
                 <Button 
                   variant="ghost" 
-                  className="w-full justify-start"
+                  className="w-full justify-start gap-2 text-red-500"
                   onClick={() => {
                     handleLogout();
                     setIsMenuOpen(false);
                   }}
                 >
-                  Sign out
+                  <LogOut className="h-4 w-4" />
+                  <span>Sign out</span>
                 </Button>
               </div>
             </div>

@@ -1,0 +1,63 @@
+1. Student Role:
+
+    Path: student/
+
+    This section likely focuses on features related to student interactions with the app.
+
+    Subfolders include:
+
+        calendar: Could be related to scheduling and managing student activities.
+
+        courses: For managing the student's course list or course-related content.
+
+        current-affairs: A section possibly dedicated to tracking current affairs or news that students might need for exams.
+
+        pdf-courses: Likely refers to PDF documents for courses that students can access or download.
+
+        performance: Likely tracks and displays the student's progress or performance.
+
+        speed-drill: Could involve practice drills or exercises to improve skills, perhaps related to exams or course materials.
+
+        tests: For taking exams, reviewing past tests, and performance on those.
+
+2. Employee Role:
+
+    Path: employee/
+
+    This could be for users with an employee role, likely involved in administering, managing, or assisting students.
+
+    This might not have detailed subfolders in the image, but employees could have access to student data, task management, and other administrative tools.
+
+3. Admin Role:
+
+    Path: admin/
+
+    The admin role likely has the most comprehensive access to manage various aspects of the system.
+
+    Subfolders include:
+
+        CourseManagement: Admins likely manage courses here, including creating, editing, or deleting courses.
+
+        CurrentAffairsManagement: Admins manage current affairs-related content.
+
+        PDFManagement: Likely for managing and uploading PDFs for courses or materials.
+
+        SpeedDrillManagement: Admins could manage and configure drills or exercises for students.
+
+        StudentManagement: For managing student data and accounts.
+
+        TaskManagement: Could involve managing tasks, assignments, or to-do lists.
+
+        TestManagement: Admins might manage tests and exams for the system.
+
+4. Owner Role:
+
+    Path: owner/
+
+    The owner could be someone with top-level access to oversee all aspects of the application. This role might be for managing overall system configurations, users, roles, and possibly overseeing the admin's actions.
+
+Common Features for All Roles:
+
+    Authentication Files (login, logout, register): These files are essential for handling the user authentication process for any role.
+
+    Exam Files (exam/[examId]): Likely used for dynamically generating and viewing exam details for any of the roles, especially for students and admins.
