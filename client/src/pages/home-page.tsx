@@ -34,7 +34,7 @@ export default function HomePage() {
               </Link>
             ) : (
               <>
-                <Link href="/auth" className="hidden sm:inline-block text-primary hover:text-primary/90 font-medium">
+                <Link href="/auth" className="border border-primary text-primary hover:bg-primary/10 font-medium rounded-lg py-2 px-4 transition-colors">
                   Login
                 </Link>
                 <Link href="/auth" className="bg-primary hover:bg-primary/90 text-white font-medium rounded-lg py-2 px-4 transition-colors">
@@ -59,11 +59,18 @@ export default function HomePage() {
                 calendar planning and dedicated mentor support.
               </p>
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                <Link href="/auth" className="bg-primary hover:bg-primary/90 text-white text-center font-medium rounded-lg py-3 px-6 text-lg transition-colors">
+                <Link href="/auth" className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white text-center font-medium rounded-lg py-3 px-6 text-lg transition-colors shadow-md hover:shadow-lg">
                   Get Started for Free
                 </Link>
-                <Link href="/#features" className="bg-white text-primary border border-primary text-center font-medium rounded-lg py-3 px-6 text-lg hover:bg-gray-50 transition-colors">
-                  Explore Features
+                <Link href="/auth" className="bg-white text-primary border-2 border-primary text-center font-medium rounded-lg py-3 px-6 text-lg hover:bg-primary/5 transition-colors shadow-sm">
+                  Login to Your Account
+                </Link>
+              </div>
+              <div className="mt-8 flex items-center justify-start">
+                <Link href="/#features" className="flex items-center text-gray-700 hover:text-primary">
+                  <span className="mr-2 text-primary">⭐</span>
+                  <span className="font-medium">Explore Features</span>
+                  <BsArrowRight className="ml-2" />
                 </Link>
               </div>
             </div>
