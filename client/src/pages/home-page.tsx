@@ -29,7 +29,10 @@ export default function HomePage() {
           
           <div className="flex items-center space-x-4">
             {user ? (
-              <Link href="/dashboard" className="bg-primary hover:bg-primary/90 text-white font-medium rounded-lg py-2 px-4 transition-colors">
+              <Link 
+                href={user.role === "owner" ? "/owner" : "/dashboard"} 
+                className="bg-primary hover:bg-primary/90 text-white font-medium rounded-lg py-2 px-4 transition-colors"
+              >
                 Dashboard
               </Link>
             ) : (

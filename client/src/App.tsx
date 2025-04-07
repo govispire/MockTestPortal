@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Redirect } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
@@ -8,12 +8,25 @@ import ResultsPage from "@/pages/results-page";
 import HomePage from "@/pages/home-page";
 import OwnerDashboard from "@/pages/owner-dashboard";
 import { ProtectedRoute } from "./lib/protected-route";
-import { AuthProvider } from "@/hooks/use-auth";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
 
 function Router() {
+  const { user } = useAuth();
+
   return (
     <Switch>
-      <Route path="/" component={HomePage} />
+      <Route path="/">
+        {() => {
+          if (user) {
+            if (user.role === "owner") {
+              return <Redirect to="/owner" />;
+            } else {
+              return <Redirect to="/dashboard" />;
+            }
+          }
+          return <HomePage />;
+        }}
+      </Route>
       <Route path="/auth" component={AuthPage} />
       <ProtectedRoute path="/dashboard" component={DashboardPage} />
       <ProtectedRoute path="/owner" component={OwnerDashboard} />
