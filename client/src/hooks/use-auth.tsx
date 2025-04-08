@@ -24,6 +24,7 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const [_, navigate] = useLocation();
+  
   const {
     data: user,
     error,
@@ -39,17 +40,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return await res.json();
     },
     onSuccess: (user: SelectUser) => {
-      console.log("Login successful, user data:", user);
       queryClient.setQueryData(["/api/user"], user);
       toast({
         title: "Login successful",
         description: `Welcome back, ${user.username}!`,
       });
-      
-      // Don't redirect here - let the useEffect in auth-page handle it
-      // This prevents race conditions between state updates and navigation
-      console.log("User role:", user.role);
-      console.log("Redirection will be handled by auth-page useEffect");
     },
     onError: (error: Error) => {
       toast({
@@ -66,17 +61,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return await res.json();
     },
     onSuccess: (user: SelectUser) => {
-      console.log("Registration successful, user data:", user);
       queryClient.setQueryData(["/api/user"], user);
       toast({
         title: "Registration successful",
         description: `Welcome, ${user.username}!`,
       });
-      
-      // Don't redirect here - let the useEffect in auth-page handle it
-      // This prevents race conditions between state updates and navigation
-      console.log("User role:", user.role);
-      console.log("Redirection will be handled by auth-page useEffect");
     },
     onError: (error: Error) => {
       toast({
@@ -97,8 +86,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Logged out",
         description: "You have been successfully logged out.",
       });
-      // Redirect to the auth page after logout
-      navigate("/auth");
+      // Use window.location to guarantee a clean logout and redirect
+      window.location.href = "/auth";
     },
     onError: (error: Error) => {
       toast({
@@ -106,6 +95,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: error.message,
         variant: "destructive",
       });
+      // Try a local logout anyway
+      queryClient.setQueryData(["/api/user"], null);
+      window.location.href = "/auth";
     },
   });
 

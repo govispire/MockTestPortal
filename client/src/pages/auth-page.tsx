@@ -88,50 +88,40 @@ export default function AuthPage() {
 
   // Form submissions
   const onLoginSubmit = (data: LoginFormValues) => {
-    // If username contains "owner" or "admin", log in as owner
-    if (data.username.toLowerCase().includes("owner") || data.username.toLowerCase().includes("admin")) {
-      // Mock the login response with owner role
-      const mockOwnerUser = {
-        id: 1,
-        username: data.username,
-        name: "Owner User",
-        email: "owner@mockprep.com",
-        role: "owner"
-      };
-      
-      // Show toast and redirect
-      toast({
-        title: "Logged in successfully",
-        description: "Welcome to the Owner Dashboard",
-      });
-      
-      // Manually set the user data in the query client
-      queryClient.setQueryData(["/api/user"], mockOwnerUser);
-      
-      // Directly navigate to owner dashboard
-      setTimeout(() => navigate("/owner"), 300);
-    } else {
-      // For any other username, log in as student
-      const mockStudentUser = {
-        id: 2,
-        username: data.username,
-        name: "Student User",
-        email: "student@mockprep.com",
-        role: "student"
-      };
-      
-      // Show toast and redirect
-      toast({
-        title: "Logged in successfully",
-        description: "Welcome to your Student Dashboard",
-      });
-      
-      // Manually set the user data in the query client
-      queryClient.setQueryData(["/api/user"], mockStudentUser);
-      
-      // Directly navigate to student dashboard
-      setTimeout(() => navigate("/dashboard"), 300);
-    }
+    // Determine if owner or student based on username
+    const isOwner = data.username.toLowerCase().includes("owner") || data.username.toLowerCase().includes("admin");
+    
+    // Create the user object
+    const mockUser = {
+      id: isOwner ? 1 : 2,
+      username: data.username,
+      name: isOwner ? "Owner User" : "Student User",
+      email: isOwner ? "owner@mockprep.com" : "student@mockprep.com",
+      role: isOwner ? "owner" : "student"
+    };
+    
+    // Store the user data in local storage to persist across refreshes
+    localStorage.setItem("mockprep_user", JSON.stringify(mockUser));
+    
+    // Update the query client
+    queryClient.setQueryData(["/api/user"], mockUser);
+    
+    // Show toast notification
+    toast({
+      title: "Logged in successfully",
+      description: `Welcome to the ${isOwner ? "Owner" : "Student"} Dashboard`,
+    });
+    
+    // Force redirection after a brief delay
+    setTimeout(() => {
+      if (isOwner) {
+        console.log("Redirecting to owner dashboard");
+        window.location.href = "/owner";
+      } else {
+        console.log("Redirecting to student dashboard");
+        window.location.href = "/dashboard";
+      }
+    }, 300);
   };
 
   const onRegisterSubmit = (data: RegisterFormValues) => {
@@ -144,17 +134,23 @@ export default function AuthPage() {
       role: "student"
     };
     
-    // Show toast and redirect
+    // Store the user data in local storage to persist across refreshes
+    localStorage.setItem("mockprep_user", JSON.stringify(mockStudentUser));
+    
+    // Update the query client
+    queryClient.setQueryData(["/api/user"], mockStudentUser);
+    
+    // Show toast notification
     toast({
       title: "Account created successfully",
       description: "Welcome to MockPrep, " + data.name,
     });
     
-    // Manually set the user data in the query client
-    queryClient.setQueryData(["/api/user"], mockStudentUser);
-    
-    // Directly navigate to student dashboard
-    setTimeout(() => navigate("/dashboard"), 300);
+    // Force redirection to student dashboard
+    setTimeout(() => {
+      console.log("Redirecting new user to student dashboard");
+      window.location.href = "/dashboard";
+    }, 300);
   };
 
   return (
