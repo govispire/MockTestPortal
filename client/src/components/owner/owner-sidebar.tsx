@@ -112,7 +112,7 @@ export default function OwnerSidebar({ children }: OwnerSidebarProps) {
             <nav className="flex-1 px-3 space-y-1">
               {navigation.map((item) => (
                 <Link key={item.name} href={item.href}>
-                  <a
+                  <div
                     className={cn(
                       "group flex items-center px-3 py-2 rounded-md text-sm font-medium",
                       item.current
@@ -130,7 +130,7 @@ export default function OwnerSidebar({ children }: OwnerSidebarProps) {
                     {item.current && (
                       <ChevronRight className="ml-auto h-4 w-4 text-primary" />
                     )}
-                  </a>
+                  </div>
                 </Link>
               ))}
             </nav>
@@ -189,7 +189,7 @@ export default function OwnerSidebar({ children }: OwnerSidebarProps) {
                         href={item.href}
                         onClick={() => setIsOpen(false)}
                       >
-                        <a
+                        <div
                           className={cn(
                             "group flex items-center px-3 py-2 rounded-md text-sm font-medium",
                             item.current
@@ -207,7 +207,7 @@ export default function OwnerSidebar({ children }: OwnerSidebarProps) {
                           {item.current && (
                             <ChevronRight className="ml-auto h-4 w-4 text-primary" />
                           )}
-                        </a>
+                        </div>
                       </Link>
                     ))}
                   </nav>

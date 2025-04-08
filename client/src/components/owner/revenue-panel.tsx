@@ -359,7 +359,10 @@ export default function RevenuePanel() {
                 <div className="grid grid-cols-2 gap-4 w-full">
                   {REVENUE_BY_CATEGORY.map((category) => (
                     <div key={category.name} className="flex items-center space-x-2">
-                      <div className="h-3 w-3 rounded-full" style={{ backgroundColor: category.color }}></div>
+                      <div 
+                        className="h-3 w-3 rounded-full" 
+                        style={{ backgroundColor: category.color }}
+                      ></div>
                       <span className="text-sm">{category.name}</span>
                     </div>
                   ))}
@@ -503,8 +506,10 @@ export default function RevenuePanel() {
                         <Progress 
                           value={method.value} 
                           className="h-2"
-                          style={{ backgroundColor: `${method.color}20` }}
-                          style={{ backgroundColor: method.color }} 
+                          style={{ 
+                            "--bg-color": `${method.color}20`,
+                            "--fg-color": method.color
+                          } as React.CSSProperties}
                         />
                       </div>
                     ))}
