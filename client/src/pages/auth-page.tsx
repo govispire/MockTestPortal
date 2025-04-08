@@ -1,6 +1,4 @@
-import { useAuth } from "@/hooks/use-auth";
-import { useEffect, useState } from "react";
-import { useLocation } from "wouter";
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -18,7 +16,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 const loginSchema = z.object({
@@ -42,27 +39,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<string>("login");
-  const { user, loginMutation, registerMutation } = useAuth();
-  const [, navigate] = useLocation();
   const { toast } = useToast();
-
-  // Redirect if already logged in
-  useEffect(() => {
-    console.log("Auth page useEffect triggered, user:", user);
-    if (user) {
-      console.log("User is logged in, role:", user.role);
-      // Delay redirect slightly to ensure state is fully updated
-      setTimeout(() => {
-        if (user.role === "owner") {
-          console.log("Redirecting owner to /owner dashboard");
-          navigate("/owner");
-        } else {
-          console.log("Redirecting regular user to /dashboard");
-          navigate("/dashboard");
-        }
-      }, 100);
-    }
-  }, [user, navigate]);
 
   // Login form setup
   const loginForm = useForm<LoginFormValues>({
@@ -88,32 +65,17 @@ export default function AuthPage() {
 
   // Form submissions
   const onLoginSubmit = (data: LoginFormValues) => {
-    // Determine if owner or student based on username
-    const isOwner = data.username.toLowerCase().includes("owner") || data.username.toLowerCase().includes("admin");
-    
-    // Create the user object
-    const mockUser = {
-      id: isOwner ? 1 : 2,
-      username: data.username,
-      name: isOwner ? "Owner User" : "Student User",
-      email: isOwner ? "owner@mockprep.com" : "student@mockprep.com",
-      role: isOwner ? "owner" : "student"
-    };
-    
-    // Store the user data in local storage to persist across refreshes
-    localStorage.setItem("mockprep_user", JSON.stringify(mockUser));
-    
-    // Update the query client
-    queryClient.setQueryData(["/api/user"], mockUser);
-    
-    // Show toast notification
-    toast({
-      title: "Logged in successfully",
-      description: `Welcome to the ${isOwner ? "Owner" : "Student"} Dashboard`,
-    });
-    
-    // Force redirection after a brief delay
-    setTimeout(() => {
+    try {
+      // Determine if owner or student based on username
+      const isOwner = data.username.toLowerCase().includes("owner") || data.username.toLowerCase().includes("admin");
+      
+      // Show toast notification
+      toast({
+        title: "Logged in successfully",
+        description: `Welcome to the ${isOwner ? "Owner" : "Student"} Dashboard`,
+      });
+      
+      // Force redirection immediately
       if (isOwner) {
         console.log("Redirecting to owner dashboard");
         window.location.href = "/owner";
@@ -121,36 +83,34 @@ export default function AuthPage() {
         console.log("Redirecting to student dashboard");
         window.location.href = "/dashboard";
       }
-    }, 300);
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: "Error logging in",
+        description: "Please try again",
+        variant: "destructive"
+      });
+    }
   };
 
   const onRegisterSubmit = (data: RegisterFormValues) => {
-    // By default register as student
-    const mockStudentUser = {
-      id: Math.floor(Math.random() * 1000) + 3, // Random ID
-      username: data.username,
-      name: data.name,
-      email: data.email,
-      role: "student"
-    };
-    
-    // Store the user data in local storage to persist across refreshes
-    localStorage.setItem("mockprep_user", JSON.stringify(mockStudentUser));
-    
-    // Update the query client
-    queryClient.setQueryData(["/api/user"], mockStudentUser);
-    
-    // Show toast notification
-    toast({
-      title: "Account created successfully",
-      description: "Welcome to MockPrep, " + data.name,
-    });
-    
-    // Force redirection to student dashboard
-    setTimeout(() => {
-      console.log("Redirecting new user to student dashboard");
+    try {
+      // Show toast notification
+      toast({
+        title: "Account created successfully",
+        description: "Welcome to MockPrep, " + data.name,
+      });
+      
+      // Force redirection to student dashboard
       window.location.href = "/dashboard";
-    }, 300);
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast({
+        title: "Error creating account",
+        description: "Please try again",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -226,10 +186,9 @@ export default function AuthPage() {
 
                       <Button 
                         type="submit" 
-                        className="w-full" 
-                        disabled={loginMutation.isPending}
+                        className="w-full"
                       >
-                        {loginMutation.isPending ? "Signing in..." : "Sign in"}
+                        Sign in
                       </Button>
                     </form>
                   </Form>
@@ -310,10 +269,9 @@ export default function AuthPage() {
 
                       <Button 
                         type="submit" 
-                        className="w-full" 
-                        disabled={registerMutation.isPending}
+                        className="w-full"
                       >
-                        {registerMutation.isPending ? "Creating account..." : "Create account"}
+                        Create account
                       </Button>
                     </form>
                   </Form>
