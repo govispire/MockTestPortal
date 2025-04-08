@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 const loginSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -43,6 +44,7 @@ export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<string>("login");
   const { user, loginMutation, registerMutation } = useAuth();
   const [, navigate] = useLocation();
+  const { toast } = useToast();
 
   // Redirect if already logged in
   useEffect(() => {
@@ -96,8 +98,18 @@ export default function AuthPage() {
         email: "owner@mockprep.com",
         role: "owner"
       };
+      
+      // Show toast and redirect
+      toast({
+        title: "Logged in successfully",
+        description: "Welcome to the Owner Dashboard",
+      });
+      
       // Manually set the user data in the query client
       queryClient.setQueryData(["/api/user"], mockOwnerUser);
+      
+      // Directly navigate to owner dashboard
+      setTimeout(() => navigate("/owner"), 300);
     } else {
       // For any other username, log in as student
       const mockStudentUser = {
@@ -107,8 +119,18 @@ export default function AuthPage() {
         email: "student@mockprep.com",
         role: "student"
       };
+      
+      // Show toast and redirect
+      toast({
+        title: "Logged in successfully",
+        description: "Welcome to your Student Dashboard",
+      });
+      
       // Manually set the user data in the query client
       queryClient.setQueryData(["/api/user"], mockStudentUser);
+      
+      // Directly navigate to student dashboard
+      setTimeout(() => navigate("/dashboard"), 300);
     }
   };
 
@@ -121,8 +143,18 @@ export default function AuthPage() {
       email: data.email,
       role: "student"
     };
+    
+    // Show toast and redirect
+    toast({
+      title: "Account created successfully",
+      description: "Welcome to MockPrep, " + data.name,
+    });
+    
     // Manually set the user data in the query client
     queryClient.setQueryData(["/api/user"], mockStudentUser);
+    
+    // Directly navigate to student dashboard
+    setTimeout(() => navigate("/dashboard"), 300);
   };
 
   return (
