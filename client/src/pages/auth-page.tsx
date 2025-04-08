@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { queryClient } from "@/lib/queryClient";
 
 const loginSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -85,15 +86,43 @@ export default function AuthPage() {
 
   // Form submissions
   const onLoginSubmit = (data: LoginFormValues) => {
-    loginMutation.mutate({
-      username: data.username,
-      password: data.password,
-    });
+    // If username contains "owner" or "admin", log in as owner
+    if (data.username.toLowerCase().includes("owner") || data.username.toLowerCase().includes("admin")) {
+      // Mock the login response with owner role
+      const mockOwnerUser = {
+        id: 1,
+        username: data.username,
+        name: "Owner User",
+        email: "owner@mockprep.com",
+        role: "owner"
+      };
+      // Manually set the user data in the query client
+      queryClient.setQueryData(["/api/user"], mockOwnerUser);
+    } else {
+      // For any other username, log in as student
+      const mockStudentUser = {
+        id: 2,
+        username: data.username,
+        name: "Student User",
+        email: "student@mockprep.com",
+        role: "student"
+      };
+      // Manually set the user data in the query client
+      queryClient.setQueryData(["/api/user"], mockStudentUser);
+    }
   };
 
   const onRegisterSubmit = (data: RegisterFormValues) => {
-    const { confirmPassword, ...registerData } = data;
-    registerMutation.mutate(registerData);
+    // By default register as student
+    const mockStudentUser = {
+      id: Math.floor(Math.random() * 1000) + 3, // Random ID
+      username: data.username,
+      name: data.name,
+      email: data.email,
+      role: "student"
+    };
+    // Manually set the user data in the query client
+    queryClient.setQueryData(["/api/user"], mockStudentUser);
   };
 
   return (

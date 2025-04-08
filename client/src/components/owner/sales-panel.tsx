@@ -485,9 +485,10 @@ export default function SalesPanel() {
                       <Progress 
                         value={(category.value / SALES_OVERVIEW[0].value * 100)} 
                         className="h-2"
-                        style={{ backgroundColor: `${category.color}20` }}
-                        indicatorClassName="h-full" 
-                        style={{ backgroundColor: category.color }}
+                        style={{ 
+                          "--bg-color": `${category.color}20`,
+                          "--fg-color": category.color
+                        } as React.CSSProperties}
                       />
                     </div>
                   ))}
